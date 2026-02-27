@@ -1,0 +1,321 @@
+\section{Lesson 7}\label{sec:les_07}
+
+In this lesson, we want to study \textbf{Helmholtz problems}, evaluate the error forms of \textbf{dissipation} and \textbf{dispersion} that we may have when computing a wave equation, and introduce an alternative to the finite element method called \textbf{spectral element method}.
+
+\subsection{Helmholtz problem}
+
+Let's consider the following problem and boundary conditions in $ x \in (0,L) $:
+\begin{equation}\label{eq:Helmholtz_prob}
+    \begin{cases}
+        \partial_{xx} u(x) + k^2 u(x) = f(x) \\[3pt]
+        \partial_x u(0) = g_1 \\[3pt]
+        \partial_x u(L) = 0
+    \end{cases}
+\end{equation}
+
+The Helmholtz problem \eqref{eq:Helmholtz_prob} is characterized by boundary velocity values.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Helmholtz_problem.png}
+    \caption{Boundary velocities for the Helmholtz problem}
+\end{figure}
+
+The corresponding weak formulation starts, as usual, from:
+\begin{equation}
+    \int_0^L \partial_{xx} u(x) \ v(x) \ dx + \int_0^L k^2 u(x) \ v(x) \ dx = \int_0^L f(x) v(x) \ dx
+\end{equation}
+
+Solving the first integral by parts:
+\begin{equation}
+    \int_0^L \partial_{xx} u(x) \ v(x) \ dx = \left[ \partial_x u(x) \ v(x) \right]_0^L - \int_0^L \partial_x u(x) \  \partial_x v(x) \ dx =
+\end{equation}
+\begin{equation*}
+    = \cancelto{0}{\partial_x u(L)} \ v(L) - \cancelto{g_1}{\partial_x u(0)} \ v(0) - \int_0^L \partial_x u(x) \  \partial_x v(x) \ dx = - g_1 v(0) - \int_0^L \partial_x u(x) \  \partial_x v(x) \ dx
+\end{equation*}
+
+Result, the \textbf{weak formulation} for \eqref{eq:Helmholtz_prob} states that $ u(x) \in H^1(0,L) $ is solution of ($ \forall v \in H^1(0,L) $):
+\begin{equation}
+    - \int_0^L \partial_x u(x) \  \partial_x v(x) \ dx + \int_0^L k^2 u(x) \ v(x) \ dx = \int_0^L f(x) v(x) \ dx + g_1 v(0)
+\end{equation}
+
+As usual, the problem is well-posed thanks to the Lax-Milgram lemma.
+The only difference with respect to all previous cases is the $ - $ sign at the first integral.
+
+Regarding the finite element method, we remind the definition of the subspace $ V_h $ at \eqref{eq:piece_wise}.
+The \textbf{finite element formulation} (or Galerkin formulation) for \eqref{eq:Helmholtz_prob} states that $ u_h \in V_h $ is solution of ($ \forall v_h \in V_h $):
+\begin{equation}
+    - \int_0^L \partial_x u_h(x) \  \partial_x v_h(x) \ dx + \int_0^L k^2 u_h(x) \ v_h(x) \ dx = \int_0^L f(x) v_h(x) \ dx + g_1 v_h(0)
+\end{equation}
+\begin{equation*}
+    \Leftrightarrow - a(u_h,v_h) + m(u_h,v_h) = F(v_h)
+\end{equation*}
+
+The \textbf{algebraic formulation} is obtained, as usual, following the logic of \eqref{eq:alg_form_Neumann}, which is defining $ u_h \in V_h $ as linear combination of basis functions and $ v_h = \varphi_i $ as in \eqref{eq:Vh_basis}:
+\begin{equation}
+    u_h(x) = \sum_{j=0}^{N_h} u_j \ \varphi_j(x), \quad v_h(x) = \varphi_i(x), \quad \forall i = 0, \cdots, N_h
+\end{equation}
+\begin{equation*}
+    \sum_{j=0}^{N_h} u_j \ \left[ m(\varphi_j, \varphi_i) - a(\varphi_j, \varphi_i) \right] = F(\varphi_i) \Rightarrow \left( [M] - [A] \right) \underline{u} = \underline{F}
+\end{equation*}
+
+When $ \underline{F} = \underline{0} $, we have an eigenvalue-eigenvector problem:
+\begin{equation}
+    \left( [M] - [A] \right) \underline{u} = \underline{0} \Leftrightarrow [M] \ \underline{u} = [A] \ \underline{u} \Leftrightarrow k^2 \ [\hat{M}] \ \underline{u} = [A] \ \underline{u}
+\end{equation}
+
+By approximating the eigenvalue $k$, we approximate the frequency $\omega$ too:
+\begin{equation}
+    k^2 = \frac{\omega^2}{c^2}, \quad k_h \approx k \Rightarrow \omega_h \approx \omega
+\end{equation}
+
+We can compute a verification test:
+\begin{equation}
+    \begin{cases}
+        \partial_{xx} u(x) + k^2 u(x) = f(x), & x \in (0,1) \\[3pt]
+        \partial_x u(0) = - \rho \omega^2 X, & \rho = 1.225 \text{ kg/m}^3, \quad X = 10^{-3} \\[3pt]
+        \partial_x u(1) = 0, & \omega = \{200 \pi, 500 \pi\} \text{ rad/s}
+    \end{cases}
+\end{equation}
+
+To compute the modes $ \omega_i $ when $ \partial_x u(0) = 0 $:
+\begin{equation}
+    [A] \ \underline{u} = k^2 \ [\hat{M}] \ \underline{u}, \quad
+    \begin{cases}
+        \partial_{xx} u(x) + k^2 u(x) = 0 \\[3pt]
+        \partial_x u(0) = \partial_x u(L) = 0
+    \end{cases}
+\end{equation}
+\begin{equation*}
+    \lambda_{1,2} = \pm jk \Rightarrow u(x) = C_1 e^{j kx} + C_2 e^{-j kx} \Rightarrow \omega_n = n \frac{\pi}{L}
+\end{equation*}
+
+\subsection{Dissipation and dispersion}
+
+When we switch from continuous to discrete domain, we may observe some differences between \textbf{analytic} and \textbf{approximated} solutions.
+The dissipation error consists in amplitude reduction, while dispersion consists in a stretch along the space.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Dissipation_dispersion.png}
+    \caption{Dissipation and dispersion effects}
+\end{figure}
+
+Let's study the wave equation in an infinite one-dimensional space domain, with no external sources and constant material properties ($ \mu $ and $ \rho $):
+\begin{equation}
+    \begin{cases}
+        \partial_{tt} u - c^2 \partial_{xx} u = 0, \quad x \in \mathbb{R}, \quad c = \sqrt{\frac{\mu}{\rho}} \\[3pt]
+        u(x,0) = u_0(x) \\[3pt]
+        \partial_t u(x,0) = v_0(x)
+    \end{cases}
+    \Rightarrow
+    u(x,t) = e^{j \left( \omega t - kx \right)}, \quad k = \frac{2 \pi}{\lambda}, \quad \omega = \frac{2 \pi}{T}
+\end{equation}
+
+Substituting the solution $ u(x,t) $ into the wave equation, we obtain the \textbf{dispersion relation}:
+\begin{equation}
+    \partial_{tt} u = - \omega^2 u(x,t), \quad \partial_{xx} u = - k^2 u(x,t)
+\end{equation}
+\begin{equation*}
+    \Rightarrow - \omega^2 u(x,t) + c^2 k^2 u(x,t) = \left( -\omega^2 + c^2 k^2 \right) u(x,t) = 0 \Rightarrow \omega^2 = c^2 k^2
+\end{equation*}
+
+The next step is to discretize the infinite space domain (mesh).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Inifinte_mesh.png}
+    \caption{Mesh for an infinite space domain}
+\end{figure}
+
+As usual, the \textbf{algebraic formulation} is:
+\begin{equation}\label{eq:alg_infinite}
+    \begin{cases}
+        [M] \ \ddot{\underline{u}} + [A] \ \underline{u} = \underline{0}, \quad t>0 \\[3pt]
+        \text{+ initial conditions}
+    \end{cases}
+\end{equation}
+
+The spatial mesh has infinite points, so we have infinite basis functions $ \varphi_i $: the problem of having \textbf{infinite vectors} (due to the infinite dimension of the problem) is clear.
+
+The generic equation of \eqref{eq:alg_infinite} (i-th row, $ v_h = \varphi_i $) is finite in dimension and takes into account the presence of $ \varphi_i $, $ \varphi_{i-1} $ and $ \varphi_{i+1} $ in the space interval $ \left( -h, h \right) $:
+\begin{equation}
+    m_{i,i-1} \ddot{u}_{i-1}(t) + m_{i,i} \ddot{u}_i(t) + m_{i,i+1} \ddot{u}_{i+1}(t) = -c^2 \left[ a_{i,i-1} u_{i-1}(t) + a_{i,i} u_{i-1}(t) + a_{i,i+1} u_{i+1}(t) \right]
+\end{equation}
+\begin{equation*}
+    \frac{h}{6} \ddot{u}_{i-1}(t) + \frac{2h}{3} \ddot{u}_i(t) + \frac{h}{6} \ddot{u}_{i+1}(t) = -c^2 \left[ -\frac{1}{h} u_{i-1}(t) + \frac{2}{h} u_{i-1}(t) - \frac{1}{h} u_{i+1}(t) \right]
+\end{equation*}
+
+We define the analytic solution in the mesh nodes only:
+\begin{equation}
+    u_i = u(x_i,t) = e^{j \left( \omega t - kx_i \right)}, \quad \ddot{u}_i = \ddot{u}(x_i,t)
+\end{equation}
+\begin{equation*}
+    u_{i+1} = e^{j \left( \omega t - kx_{i+1} \right)} = e^{j \left( \omega t - kx_i - kh \right)} = u_i e^{-jkh}
+\end{equation*}
+\begin{equation*}
+    u_{i-1} = e^{j \left( \omega t - kx_{i-1} \right)} = e^{j \left( \omega t - kx_i + kh \right)} = u_i e^{jkh}
+\end{equation*}
+
+The generic row of the system \eqref{eq:alg_infinite} is:
+\begin{equation}
+    \left( \frac{h}{6} e^{jkh} + \frac{2h}{3} + \frac{h}{6} e^{-jkh} \right) \ddot{u}_i = -c^2 \left( -\frac{1}{h} e^{jkh} + \frac{2}{h} - \frac{1}{h} e^{-jkh} \right) u_i
+\end{equation}
+\begin{equation*}
+    h^2 \left( \frac{1}{6} e^{jkh} + \frac{2}{3} + \frac{1}{6} e^{-jkh} \right) \ddot{u}_i = -c^2 \left( - e^{jkh} + 2 - e^{-jkh} \right) u_i
+\end{equation*}
+
+We still have functions of time, so we apply time discretization (\textbf{central difference}):
+\begin{equation}
+    u_i^n = u(x_i,t_n) = e^{j \left( \omega t_n - kx_i \right)}
+\end{equation}
+\begin{equation*}
+    u_i^{n+1} = e^{j \left( \omega t_{n+1} - kx_i \right)} = e^{j \left( \omega t_n + \omega \Delta t - kx_i \right)} = u_i^n e^{j \omega \Delta t}
+\end{equation*}
+\begin{equation*}
+    u_i^{n-1} = e^{j \left( \omega t_{n-1} - kx_i \right)} = e^{j \left( \omega t_n - \omega \Delta t - kx_i \right)} = u_i^n e^{-j \omega \Delta t}
+\end{equation*}
+
+Using the 2nd order Taylor expansion:
+\begin{equation}
+    \ddot{u}_i^n = \ddot{u}_i (t_n) \approx \frac{u_i^{n+1} - 2 u_i^n + u_i^{n-1}}{\Delta t^2} = \frac{e^{j\omega \Delta t} - 2 + e^{-j \omega \Delta t}}{\Delta t^2} u_i^n
+\end{equation}
+
+The generic row of the system \eqref{eq:alg_infinite} becomes:
+\begin{equation}
+    h^2 \left( \frac{1}{6} e^{jkh} + \frac{2}{3} + \frac{1}{6} e^{-jkh} \right) \left( \frac{e^{j\omega \Delta t} - 2 + e^{-j \omega \Delta t}}{\Delta t^2} \right) u_i^n = -c^2 \left( - e^{jkh} + 2 - e^{-jkh} \right) u_i^n
+\end{equation}
+
+So, in order to have solution $ u_h(x,t) $, the following must be valid:
+\begin{equation}
+    h^2 \left( \frac{1}{6} e^{jkh} + \frac{2}{3} + \frac{1}{6} e^{-jkh} \right) \left( \frac{e^{j\omega \Delta t} - 2 + e^{-j \omega \Delta t}}{\Delta t^2} \right) \cancel{u_i^n} = -c^2 \left( - e^{jkh} + 2 - e^{-jkh} \right) \cancel{u_i^n}
+\end{equation}
+\begin{equation*}
+    h^2 \left( \frac{e^{jkh} + e^{-jkh}}{6} + \frac{2}{3} \right) \left( \frac{e^{j \omega \Delta t} + e^{-j \omega \Delta t}}{\Delta t^2} - \frac{2}{\Delta t^2} \right) = c^2 \left( e^{jkh} + e^{-jkh} - 2 \right)
+\end{equation*}
+\begin{equation*}
+    h^2 \left( \frac{\cos \left( kh \right) + 2}{3} \right) \left( \frac{2 \cos \left( \omega \Delta t \right) - 2}{\Delta t^2} \right) = c^2 \left( 2 \cos \left( kh \right) - 2 \right)
+\end{equation*}
+\begin{equation*}
+    \Rightarrow \frac{4}{\Delta t^2} \sin \left( \frac{\omega \Delta t}{2} \right) = 3 \frac{c^2}{h^2} \frac{2 - 2 \cos \left( kh \right)}{2 + 2 \cos \left( kh \right)}
+\end{equation*}
+
+We obtained the \textbf{dispersion relation} at the discrete level.
+The continuous level relation is obtained using limit operations:
+\begin{equation}
+    \lim_{\omega \Delta t \rightarrow 0} \sin \left( \frac{\omega \Delta t}{2} \right) = \omega^2, \quad \lim_{kh \rightarrow 0} \frac{2 - 2 \cos \left( kh \right)}{2 + 2 \cos \left( kh \right)} = k^2 \Rightarrow \omega^2 \approx c^2 k^2
+\end{equation}
+
+In order to have an accurate finite element approximation, we generally want:
+\begin{itemize}
+    \item $ \omega \Delta t \rightarrow 0 \Rightarrow \omega \nearrow, \ \Delta t << 1 $
+    \item $ kh \rightarrow 0 \Rightarrow k \nearrow, \ h << 1 $
+\end{itemize}
+
+As a result, the finite element method approximation does not introduce dispersion errors whenever the discretization (mesh size $h$, time step $\Delta t$) gets more accurate with increasing $\omega$ and $k$.
+The discretization accuracy gets better with decreasing $h$ and $\Delta t$, and goes at cost of computational resources (more points to evaluate both in space and time).
+
+\subsection{Spectral Element Method}
+
+In some cases, the finite element method is limitative to study certain problems, that is way we introduce methods with higher orders.
+We define special basis functions, we apply them into not-equispaced grid nodes and specify the quadrature formulas for said grid nodes.
+
+Let's define the interval $ I=[-1,1] $ and the \textbf{Legendre polynomials} in said interval (by recursion):
+\begin{equation}\label{eq:legendre}
+    \begin{cases}
+        L_0 = 1, \quad L_1 = x \\[3pt]
+        L_{k+1} = \dfrac{2k+1}{k+1} L_k \ x - \dfrac{k}{k+1} L_{k-1}
+    \end{cases}
+    , \quad k = 1, 2, \cdots
+\end{equation}
+
+The set of Legendre polynomials $ \{L_k\}_{k=0}^{\infty} $ is \textbf{orthogonal} in $I$ (with respect to the scalar product):
+\begin{equation}
+    \int_{-1}^{1} L_m(x) L_n(x) \ dx =
+    \begin{cases}
+        0, & m \neq n \\[3pt]
+        \left( m + \frac{1}{2} \right)^{-1}, & m = n
+    \end{cases}
+\end{equation}
+
+This basis functions need a \textbf{suitable grid} (not-equispaced nodes).
+Specifically, we specify the grid nodes (in $I$) where $ L_n'(x)=0 $.
+In this way, we define local grid nodes called \textbf{Gauss-Legendre-Lobatto points} (or GLL points).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\linewidth]{GLL_grid.png}
+    \caption{GLL points}
+\end{figure}
+
+Starting from this grid, we define the \textbf{basis functions} $ \varphi_i \in \mathbb{P}^n $ ($ n+1 $ polynomials) as:
+\begin{equation}
+    \varphi_i(x) = -\frac{1}{n (n+1)} \frac{i-x^2}{x-x_i} \frac{L_n'(x)}{L_n(x_i)}, \quad i = 0, \cdots, n
+\end{equation}
+\begin{equation*}
+    \varphi_i(x_j) = -\frac{1}{n (n+1)} \frac{i-x^2}{x_j-x_i} \frac{L_n'(x_j)}{L_n(x_i)} = \delta_{ij}, \quad i,j = 0, \cdots, n
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{SEM-examples.png}
+    \caption{Examples of basis functions}
+\end{figure}
+
+The \textbf{quadrature rule}, with the GLL points, is (weights $ \alpha_i $, grid nodes $ x_i $):
+\begin{equation}
+    \int_{-1}^{1} f(x) \ dx \approx \sum_{i=1}^m \alpha_i \ f(x_i), \quad \alpha_i = \frac{2}{i (i+1)} \frac{1}{L_n^2(x_i)} > 0
+\end{equation}
+
+The GLL rule with n+1 points is exact for polynomials up to order 2n-1.
+
+Let's now apply this spectral element method to the wave equation:
+\begin{equation}
+    \begin{cases}
+        \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f(x,t) \\[3pt]
+        \mu \ \partial_x u(0) = \mu \ \partial_x u(L) = 0 \\[3pt]
+        u(x,0) = u_0(x) \\[3pt]
+        \partial_t u(x,0) = v_0(x)
+    \end{cases}
+    \quad
+    \begin{array}{c}
+        x \in (0,L) \\[3pt]
+        t \in (0,T]
+    \end{array}
+\end{equation}
+
+The \textbf{Galerkin formulation} states that $ u_h \in V_h^n \subset H^1(0,L) $ is solution of:
+\begin{equation}
+    \int_0^L \rho \ \partial_{tt} u_h \ v_h \ dx + \int_0^L \mu \ \partial_x u_h \ \partial_x v_h \ dx = \int_0^L f v_h \ dx, \quad \forall v_h \in V_h^n
+\end{equation}
+
+Note that the subspace $ V_h $ is extended to include $ \mathbb{P}^n $ (not only $ \mathbb{P}^1 $ as in \eqref{eq:piece_wise}):
+\begin{equation}
+    V_h^n = \left\{ v \in C^0(0,L): v|_{k_j} \in \mathbb{P}^n (k_j), \forall j \right\}
+\end{equation}
+
+This new subspace is defined by the basis functions $ \psi_j $, where their number $N$ depends on the polynomial degree $n$:
+\begin{equation}
+    \dim (V_h^n) = N = (n+1) M - (M-1) = nM + M - M + 1 = nM + 1
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{V_h_n_basis.png}
+    \caption{Dimension $ \dim (V_h^n) $ computation with $ M=6 $ and $ n=3 $}
+\end{figure}
+
+The term $ (M-1) $ takes into account the fact that basis functions between intervals are glued together to keep continuity.
+
+After the discretization, the \textbf{algebraic formulation} is the same and $ [M] $ is diagonal $ \forall V_h^n $:
+\begin{equation}
+    [M] \ \ddot{\underline{u}} + [A] \ \underline{u} = \underline{F}
+\end{equation}
+\begin{equation*}
+    [M]_{ij} = \int_0^L \rho \ \psi_j (x) \psi_i (x) \ dx = \sum_{m=1}^{M} \int_{k_m} \rho \ \psi_j (x) \psi_i (x) \ dx = \sum_{m=1}^{M} \int_{-1}^{1} \rho(\xi) \ \hat{\psi}_j (\xi) \hat{\psi}_i (\xi) \frac{\abs{k_m}}{2} \ d\xi
+\end{equation*}
+
+Applying the quadrature rule:
+\begin{equation}
+    [M]_{ij} \approx \sum_{m=1}^{M} \sum_{k=1}^{n+1} \rho(\xi_k) \ \hat{\psi}_j (\xi_k) \hat{\psi}_i (\xi_k) \frac{\abs{k_m}}{2} \alpha_k = 
+    \begin{cases}
+        \sum_{m=1}^{M} \rho(\xi_i) \frac{\abs{k_m}}{2} \alpha_i, & \quad i=j \\[3pt]
+        0, & \quad i \neq j
+    \end{cases}
+\end{equation}
+
+\clearpage

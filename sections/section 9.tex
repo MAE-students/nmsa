@@ -1,0 +1,319 @@
+\section{Lesson 9}\label{sec:les_09}
+
+In this lesson, we study the simplest form of hyperbolic equation and introduce an alternative to the finite element method, defining new numerical schemes and their approximation quality.
+
+\subsection{Transport equation}
+
+Let's study the simplest form of hyperbolic equation, where $[A] = a > 0$, called \textbf{transport equation}:
+\begin{equation}\label{eq:transport}
+    \begin{cases}
+        \partial_t u + a \ \partial_x u = 0, \quad x \in (0,L), t \in (0,T] \\[3pt]
+        u(x,0) = u_0(x)
+    \end{cases}
+\end{equation}
+
+The solution of \eqref{eq:transport} is:
+\begin{equation}
+    u(x,t) = u_0 (x-at)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Transport.png}
+    \caption{Space-time domain and propagating line $X(t)$ (red)}
+\end{figure}
+
+The solution propagates along the line $X(t)$ defined as:
+\begin{equation}
+    X(t) = x_0 + at \Rightarrow
+    \begin{cases}
+        \frac{dX}{dt} = a \\[3pt]
+        X(0) = x_0
+    \end{cases}
+\end{equation}
+
+We evaluate the solution $u(x,t)$ on that line:
+\begin{equation}
+    \frac{d}{dt} u \left( X(t), t \right) = \frac{\partial u}{\partial X} \frac{\partial X}{\partial t} + \frac{\partial u}{\partial t} = \partial_x u \ a + \partial_t u \text{ (transport eq)} = 0
+\end{equation}
+
+The solution on that line is constant (zero derivative), so it is a \textbf{characteristic line}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Transport_lines.png}
+    \caption{Propagating lines and effect of the boundaries}
+\end{figure}
+
+The boundary conditions may propagate in the space-time domain, so we need to introduce \textbf{inflow boundary conditions}:
+\begin{equation}
+    u(0,t) = \varphi(t), \quad t \in (0,T]
+\end{equation}
+
+Everything is specular when $a<0$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\linewidth]{Transport_lines_negative.png}
+    \caption{Transport equation space for $a<0$}
+\end{figure}
+
+\subsection{Finite difference discretization}
+
+We present an alternative to finite element method, easier to implement, with its pros and cons.
+Let's consider the usual space-time domain $ (0,L) \times (0,T] $ and we discretize the space axis with $n+1$ points and the time axis with $m+1$ points:
+\begin{equation}
+    (0,L) \rightarrow \{ x_j \}_{j=0}^n, \quad x_j = jh, \quad x_{j+\frac{1}{2}} = x_j + \frac{h}{2}
+\end{equation}
+\begin{equation*}
+    (0,T] \rightarrow \{ t_k \}_{j=0}^m, \quad t_k = k \Delta t
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Differences_grid.png}
+    \caption{Space-time discretization ($n=4$, $m=6$)}
+\end{figure}
+
+The solution values are computed, as usual, on the grid nodes:
+\begin{equation}
+    u_j^k = u(x_j,t_k)
+\end{equation}
+
+Let's integrate the transport equation terms around $x_j$:
+\begin{equation}
+    \int_{x_{j-\frac{1}{2}}}^{x_{j+\frac{1}{2}}} \partial_t u \ dx + \int_{x_{j-\frac{1}{2}}}^{x_{j+\frac{1}{2}}} a \ \partial_x u \ dx = 0
+\end{equation}
+\begin{equation*}
+    \frac{1}{h} \int_{x_{j-\frac{1}{2}}}^{x_{j+\frac{1}{2}}} \partial_t u \ dx + \frac{1}{h} a \left( u(x_{j+\frac{1}{2}}, t) - u(x_{j-\frac{1}{2}}, t) \right)  = 0
+\end{equation*}
+\begin{equation*}
+    \partial_t \left( \frac{1}{h} \int_{x_{j-\frac{1}{2}}}^{x_{j+\frac{1}{2}}} u \ dx \right) + \frac{a \ u(x_{j+\frac{1}{2}}, t) - a \ u(x_{j-\frac{1}{2}}, t)}{h} = 0
+    \qquad
+    \partial_t u_j + \frac{1}{h} \left( H_{j+\frac{1}{2}}(t) - H_{j-\frac{1}{2}}(t) \right) = 0
+\end{equation*}
+
+Putting in evidence the specific time stamp $t_k$:
+\begin{equation}
+    \frac{u_j^{k+1} - u_j^k}{\Delta t} + \frac{1}{h} \left( H_{j+\frac{1}{2}}^k - H_{j-\frac{1}{2}}^k \right) = 0
+\end{equation}
+
+The resulting compact form of the \textbf{finite difference method}, valid for any explicit scheme, is ($ \lambda = \frac{\Delta t}{h} $):
+\begin{equation}
+    u_j^{k+1} = u_j^k - \lambda \left( H_{j+\frac{1}{2}}^k - H_{j-\frac{1}{2}}^k \right)
+\end{equation}
+
+The function $H(x,t)$ is called \textbf{numerical flux}, and it is different for each numerical scheme.
+We define different explicit schemes, such as the \textbf{forward centered Euler}:
+\begin{equation}
+    H_{j+\frac{1}{2}} = \frac{1}{2} a \left( u_{j+1} - u_j \right), \quad u_j^{k+1} = u_j^k - \lambda \frac{a}{2} \left( u_{j+1}^k - u_j^k \right)
+\end{equation}
+
+The \textbf{Lax-Wendroff}:
+\begin{equation}
+    H_{j+\frac{1}{2}} = \frac{1}{2} \left( a \left( u_{j+1} - u_j \right) - \lambda a^2 \left( u_{j+1} - u_j \right) \right)
+\end{equation}
+\begin{equation*}
+    u_j^{k+1} = u_j^k - \lambda \frac{a}{2} \left( u_{j+1}^k - u_{j-1}^k \right) + \lambda^2 \frac{a^2}{2} \left( u_{j+1}^k - 2 u_j^k + u_{j-1}^k \right)
+\end{equation*}
+
+The \textbf{Lax-Friedrichs}:
+\begin{equation}
+    H_{j+\frac{1}{2}} = \frac{1}{2} \left( a \left( u_{j+1} - u_j \right) - \frac{1}{\lambda} \left( u_{j+1} - u_j \right) \right), \quad u_j^{k+1} = u_j^k - \lambda \frac{a}{2} \left( u_{j+1}^k - u_{j-1}^k \right)
+\end{equation}
+
+And the \textbf{upwind}:
+\begin{equation}
+    H_{j+\frac{1}{2}} = \frac{1}{2} \left( a \left( u_{j+1} - u_j \right) - \abs{a} \left( u_{j+1} - u_j \right) \right)
+\end{equation}
+\begin{equation*}
+    u_j^{k+1} = u_j^k - \lambda \frac{a}{2} \left( u_{j+1}^k - u_{j-1}^k \right) + \abs{a} \frac{\lambda}{2} \left( u_{j+1}^k - 2 u_j^k + u_{j-1}^k \right)
+\end{equation*}
+
+In general for all explicit schemes defined previously, the computation of $ u_j^{k+1} = u(x_j, t_{k+1}) $ requires the contribution of three solution points ($x_{j-1}$, $x_j$ and $x_{j+1}$) form the previous time stamp $k$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Explicit_scheme.png}
+    \caption{Explicit scheme}
+\end{figure}
+
+Let's know consider implicit schemes, like the \textbf{backward Euler}: 
+\begin{equation}
+    u_j^{k+1} + \lambda \frac{a}{2} \left( u_{j+1}^{k+1} - u_{j-1}^{k+1} \right) = u_j^k
+\end{equation}
+
+The computation node-by-node is not possible anymore, and the contributions work on the opposite direction.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Implicit_scheme.png}
+    \caption{Implicit scheme}
+\end{figure}
+
+In that case, we need to build up and solve a linear system.
+
+\subsection{Boundary conditions}
+
+Let's consider the case $a>0$, in which $x=0$ is called \textbf{inflow point} and that is where:
+\begin{equation}
+    u_0^k = u(0,t_k) = \varphi (t_k)
+\end{equation}
+
+We have $n$ remaining grid points $ \{ x_i \}_{i=1}^n $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Boundary_comp.png}
+    \caption{Explicit scheme applied to the boundary point $x_n=L$}
+\end{figure}
+
+Using the explicit scheme to compute the solution at the other extreme $x_n=L$, a problem occurs because it requires the solution at the position $ x_{n+1} \notin (0,L) $.
+Different solution to this exist:
+\begin{enumerate}
+    \item $ u(x_n, t_{k+1}) = u_n^{k+1} \approx \dfrac{u_n^k - u_{n-1}^k}{h} $
+    \item using the characteristic lines (convex combination): $ u_n^{k+1} = u_{n-1}^k (\lambda a) + (1 - \lambda a) u_n^k, \quad \lambda a < 1 $
+    \item using extrapolation
+\end{enumerate}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Convex_comb.png}
+    \includegraphics[width=0.6\linewidth]{Extrapolation.png}
+    \caption{Convex combination (left) and extrapolation (right)}
+\end{figure}
+
+\subsection{Consistency and convergence}
+
+We want to study the convergence, and to do that we need consistency.
+That is way we introduce the \textbf{truncation error}:
+\begin{equation}
+    \tau_j^k = \frac{u(x_j, t_{k+1}) - u(x_j, t_k)}{\Delta t} + a \frac{u(x_{j+1}, t_k) - u(x_{j-1}, t_k)}{2h}, \quad \tau (\Delta t, h) = \max_{j,k} \abs{\tau_j^k}
+\end{equation}
+
+The discretization method is \textbf{consistent} whenever:
+\begin{equation}
+    \Delta t, h \rightarrow 0 \Rightarrow \tau \rightarrow 0
+\end{equation}
+
+Specifically, the method is of order $p$ in time and $q$ in space whenever:
+\begin{equation}
+    \tau \approx \theta (\Delta t^p + h^q)
+\end{equation}
+
+Considering the previous explicit schemes:
+\begin{itemize}
+    \item forward centered Euler: $ \theta (\Delta t + h^2) $
+    \item Lax-Wendroff: $ \theta (\frac{h^2}{\Delta t} + \Delta t + h^2) $
+    \item Lax-Friedrichs: $ \theta (\Delta t^2 + h^2 + h^2 \Delta t) $
+    \item upwind: $ \theta (\Delta t + h) $
+\end{itemize}
+
+To measure the error, and so the order of convergence:
+\begin{equation}
+    e_j^k = u(x_j,t_k) - u_j^k, \quad e = \max_{j,k} \abs{e_j^k}
+\end{equation}
+
+The method is \textbf{convergent} whenever:
+\begin{equation}
+    \Delta t, h \rightarrow 0 \Rightarrow e \rightarrow 0
+\end{equation}
+
+\subsection{Stability}
+
+A finite difference scheme is \textbf{stable} if $\forall T > 0$, $\exists C_T > 0$ so that $\forall h > 0$, $\exists \delta (h) > 0$ so that $\forall 0 < \Delta t < \delta (h)$, it holds (for any vector norm):
+\begin{equation}
+    \norm{\underline{u}(t_k)} = \norm{\underline{u}^k} \leq C_T \norm{\underline{u}^0}, \quad \forall k \text{ so that } k \Delta t \leq T
+\end{equation}
+
+All implicit schemes are stable, regardless of $h$ and $\Delta t$, although they are not accurate enough.
+Explicit scheme must satisfy a \textbf{CFL condition} in order to be stable:
+\begin{equation}
+    \abs{a \lambda} < 1 \Leftrightarrow \abs{a} \frac{\Delta t}{h} < 1 \Leftrightarrow \Delta t < \frac{h}{\abs{a}} 
+\end{equation}
+
+Let's see how changing the time interval $ \Delta t $, in an explicit scheme, can satisfy the CFL condition, by looking at the characteristic lines.
+For low values of $ \Delta t $, the characteristic lines that start from $ (x_j, t_{k+1}) $ fall inside the interval of points of interest $ [x_{j-1}, x_{j+1}] $ at time $t_k$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{CFL_condition.png}
+    \caption{CFL condition is satisfied}
+\end{figure}
+
+For high values of $ \Delta t $, the characteristic lines that start from $ (x_j, t_{k+1}) $ fall outside the interval of points of interest $ [x_{j-1}, x_{j+1}] $ at time $t_k$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\linewidth]{CFL_unsatisfied.png}
+    \caption{CFL condition is not satisfied}
+\end{figure}
+
+There are not explicit schemes that are convergent and unconditionally stable.
+A CFL condition is always necessary, and for $ a(x,t) $:
+\begin{equation}
+    \Delta t \leq \frac{h}{\max_{x,t} \abs{a(x,t)}}
+\end{equation}
+
+Whenever the CFL condition is satisfied, three of the explicit schemes (LF, LW, UW) are \textbf{strongly stable}:
+\begin{equation}
+    \norm{\underline{u}^{k+1}} \leq C_T \norm{\underline{u}^k}, \quad \forall k
+\end{equation}
+
+The remaining explicit scheme (FE) is never strongly stable, but it is \textbf{stable} whenever:
+\begin{equation}
+    \Delta t \leq e^{\frac{T}{2}} \frac{h^2}{a^2}
+\end{equation}
+
+\subsection{Dispersion and dissipation}
+
+Let's consider the wave propagation problem in an unbounded domain $ \mathbb{R}^2 $.
+The plane wave expression is:
+\begin{equation}
+    u_0(x) = \sum_{k=-\infty}^{+\infty} \alpha_k \ e^{jkx}, \quad \alpha_k = \frac{1}{2\pi} \int_{\mathbb{R}} u_0(x) e^{-jkx} \ dx
+\end{equation}
+
+The computational grid for the space domain is:
+\begin{equation}
+    \pm x_j = \pm j h, \quad u_0(x_j) = u_j^0 = \sum_{k=-\infty}^{+\infty} \alpha_k \ e^{jk \ jh}
+\end{equation}
+
+Using the obtained initial conditions in the difference scheme, we define the \textbf{numerical solution}:
+\begin{equation}
+    u_j^n = \sum_{k=-\infty}^{+\infty} \alpha_k \ e^{jk \ jh} (\gamma_k)^n, \quad \gamma_k \in \mathbb{C} \text{ \textbf{amplification coefficient }}
+\end{equation}
+
+We have different amplification factors for each explicit scheme:
+\begin{itemize}
+    \item FE: $ \gamma_k = 1 - a \lambda \sin (kh) $
+    \item LF: $ \gamma_k = \cos (kh) - j a \lambda \sin (kh) $
+    \item LW: $ \gamma_k = 1 - j a \lambda \sin (kh) - a^2 \lambda^2 \left( 1 - \cos (kh) \right) $
+    \item UW: $ \gamma_k = 1 - \abs{a} \lambda \left( 1 - e^{-jkh} \right) $
+\end{itemize}
+
+Whenever exists a value of $ \gamma_k $ such that $ \abs{\gamma_k} > 1 $, there is no way for the scheme to be strongly stable.
+For the explicit scheme FE:
+\begin{equation}
+    \gamma_k = \left( 1 + \left( a \frac{\Delta t}{h} \sin (kh) \right)^2 \right)^{\frac{1}{2}} > 1
+\end{equation}
+
+Let's evaluate the \textbf{analytical solution} at time $ t_n $:
+\begin{equation}
+    u(x_j,t_n) = u_0(x_j-at_n) = \sum_{k=-\infty}^{+\infty} \alpha_k e^{jk \ jh} g_k^n, \quad g_k = e^{-j a k \Delta t}, \quad \abs{g_k} = 1
+\end{equation}
+
+We want now to compare analytical and numerical solutions, defining the \textbf{amplification error}:
+\begin{equation}
+    \epsilon_a(k) = \frac{\abs{\gamma_k}}{\abs{g_k}} = \abs{\gamma_k}
+\end{equation}
+
+The amplification error is equal to the dissipation error $ \abs{\gamma_k} $.
+It is now clear why it is very important that any numerical system has a bit of dissipation ($ \abs{\gamma_k} < 1 $): a non-dissipative scheme may easily become unstable.
+
+We define physical and numerical velocity:
+\begin{equation}
+    \phi_k = kh, \quad k \Delta t = k \frac{\Delta t}{h} h = \lambda \phi_k
+\end{equation}
+\begin{equation*}
+    g_k = e^{-j ak \Delta t} = e^{-j a \ \lambda \phi_k} \Rightarrow a \text{ physical velocity}
+\end{equation*}
+\begin{equation*}
+    \gamma_k = \abs{\gamma_k} e^{-j \omega_k \Delta t} = \abs{\gamma_k} e^{-j \frac{\omega_k}{k} \lambda \phi_k} \Rightarrow \frac{\omega_k}{k} \text{ numerical velocity}
+\end{equation*}
+
+We now define the \textbf{dispersion error} as the error related to the velocity:
+\begin{equation}
+    \epsilon_d(k) = \frac{\text{numerical velocity}}{\text{physical velocity}} = \frac{\dfrac{\omega_k}{k}}{a}
+\end{equation}
+
+\clearpage

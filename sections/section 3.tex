@@ -1,0 +1,257 @@
+\section{Lesson 3}\label{sec:les_03}
+
+In order to be able to compute the numerical solution of the one-dimension Neumann problem \eqref{eq:alg_form_Neumann}, we need to understand how $ V_h $ is defined (through its \textbf{basis functions} $ \varphi_j (x) $) and how it influences the \textbf{computation of the matrix} $ [A] $.
+
+Beware that, from now on, the space discretizations will involve $ N_h+1 $ points (from $0$ to $N_h$), instead of $ N_h $ as in section \ref{sec:les_02}.
+
+\subsection{Space discretization in 1D}
+
+Let us consider a one-dimension space $ x \in (0,L) $ and the subspace $ V_h $ \eqref{eq:fe_subspace}.
+We create a \textbf{mesh grid} using $ \dim{V_h} = N_h + 1 $ points, equally spaced within $ (0,L) $ with distance $ h $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{definition_Vh.png}
+    \caption{Space discretization of domain $ (0,L) $ using $ N_h + 1 $ points}
+\end{figure}
+
+The chosen mesh has $ N_h + 1 $ points ($ x_j $) and $ N_h $ intervals ($ k_j $), formally defined as:
+\begin{equation}\label{eq:mesh_1D}
+    \begin{cases}
+        x_j = x_0 + j h, \quad j = 0, \cdots, N_h \\[3pt]
+        k_j = \left[ x_j, x_{j+1} \right], \quad j = 0, \cdots, N_h-1
+    \end{cases}
+    \quad (0,L) = \bigcup_j k_j
+\end{equation}
+
+We define the subspace $ V_h $ as the set of \textbf{piecewise linear polynomials}:
+\begin{equation}\label{eq:piece_wise}
+    V_h = \left\{ v : (0,L) \rightarrow \mathbb{R}, v \in V, v|_{k_j} \in \mathbb{P}^1 (k_j) \right\}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{piece_wise.png}
+    \caption{Example of piecewise linear polynomial (blue)}
+\end{figure}
+
+\subsection{Basis functions of $ V_h $}
+
+Each function $ v_h \in V_h $ is (by definition) a linear combination of the basis functions $ \varphi_j (x) $ of the subspace $ V_h $.
+It is necessary to define them in the grid points $ x_j $ and we need $ N_h+1 $ functions (one for each point):
+\begin{equation}
+    \left\{ \varphi_j \right\}_{j=0}^{N_h} \text{ basis functions of } V_h, \quad \varphi_j (x_i) =
+    \begin{cases}
+        1, & i=j \\[3pt]
+        0, & i \neq j
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{basis_func.png}
+    \caption{Basis functions $ \varphi_j $ at each grid point $ x_j $}
+\end{figure}
+
+Each function $ v_h \in V_h $ is a linear combination of the basis functions $ \varphi_j $:
+\begin{equation}\label{eq:lin_comb}
+    v_h (x) = \sum_{j=0}^{N_h} v_j \ \varphi_j (x), \quad v_h (x_i) = \sum_{j=0}^{N_h} v_j \ \varphi_j (x_i) = v_i 
+\end{equation}
+
+We can easily switch from finite element formulation to algebraic formulation using the \textbf{weights} $ v_j $ of $ v_h (x) $:
+\begin{equation}
+    v_h (x) \leftrightarrow \underline{v_j} = \left( v_0, \cdots, v_{N_h} \right) \in \mathbb{R}^{N_h+1}
+\end{equation}
+
+The basis functions are triangular in shape and defined as:
+\begin{equation}
+    \varphi_i (x) =
+    \begin{cases}
+        \dfrac{x-x_{i-1}}{h}, & x \in k_{i-1} \\[3pt]
+        \dfrac{x_{i+1}-x}{h}, & x \in k_i \\[3pt]
+        0, & \text{ otherwise}
+    \end{cases}
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\linewidth]{base.png}
+    \caption{Basis function $ \varphi_i (x) \in V_h $}
+\end{figure}
+
+\subsection{Computation of $ [A] $}
+
+We remind the definition of the matrix $ [A] $ from \eqref{eq:alg_form_Neumann} as (the dimension is $ N_h+1 $ due to the mesh definition):
+\begin{equation}
+    [A]_{ij} = a(\varphi_i, \varphi_j) = \int_0^L \rho(x) \ \varphi_i (x) \varphi_j (x) \ dx + \int_0^L \mu(x) \ \varphi_i' (x) \varphi_j' (x) \ dx, \quad \forall i,j = 0, \cdots, N_h
+\end{equation}
+
+It is generally possible to fix the ith row and span over the jth columns, though it is faster and more efficient to study the matrix entries diagonally.
+The reason is that for each grid position $ x_i $ we only have three basis functions that interact between each other:
+\begin{equation}
+    [A]_{ij} = \int_{x_{i-1}}^{x_{i+1}} \rho(x) \ \varphi_i (x) \varphi_j (x) \ dx + \int_{x_{i-1}}^{x_{i+1}} \mu(x) \ \varphi_i' (x) \varphi_j' (x) \ dx \neq 0 \Leftrightarrow j = i-1, i, i+1
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{comp_A.png}
+    \caption{Basis functions of interest during the computation of $ [A]_{ij} $ ($ j = i-1, i, i+1 $) }
+\end{figure}
+
+We end up with three scenarios.
+The first one is:
+\begin{equation}
+    [A]_{i, i-1} = \int_{x_{i-1}}^{x_{i}} \rho(x) \ \varphi_{i-1} (x) \varphi_i (x) \ dx + \int_{x_{i-1}}^{x_{i}} \mu(x) \ \varphi_{i-1}' (x) \varphi_i' (x) \ dx = 
+\end{equation}
+\begin{equation*}
+    = \int_{x_{i-1}}^{x_{i}} \rho(x) \frac{x_i - x}{h} \frac{x - x_{i-1}}{h} \ dx + \int_{x_{i-1}}^{x_{i}} \mu(x) \left( - \frac{1}{h} \right) \frac{1}{h} \ dx
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\linewidth]{comp_A1.png}
+    \caption{Computation of $ [A]_{i,i-1} $}    
+\end{figure}
+
+The second one is:
+\begin{equation}
+    [A]_{i, i} = \int_{x_{i-1}}^{x_{i}} \rho(x) \ \varphi_{i} (x) \varphi_i (x) \ dx + \int_{x_{i-1}}^{x_{i}} \mu(x) \ \varphi_{i}' (x) \varphi_i' (x) \ dx + 
+\end{equation}
+\begin{equation*}
+    + \int_{x_{i}}^{x_{i+1}} \rho(x) \ \varphi_{i} (x) \varphi_i (x) \ dx + \int_{x_{i}}^{x_{i+1}} \mu(x) \ \varphi_{i}' (x) \varphi_i' (x) \ dx =
+\end{equation*}
+\begin{equation*}
+    = \int_{x_{i-1}}^{x_i} \rho(x) \left(\frac{x - x_{i-1}}{h}\right)^2 dx + \int_{x_i}^{x_{i+1}} \rho(x) \left(\frac{x_{i+1} - x}{h}\right)^2 dx +
+\end{equation*}
+\begin{equation*}
+    + \int_{x_{i-1}}^{x_{i}} \mu(x) \left( - \frac{1}{h} \right) \left( - \frac{1}{h} \right) \ dx + \int_{x_i}^{x_{i+1}} \mu(x) \frac{1}{h} \frac{1}{h} \ dx
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\linewidth]{comp_A2.png}
+    \caption{Computation of $ [A]_{i,i} $}
+\end{figure}
+
+The third one is:
+\begin{equation}
+    [A]_{i, i+1} = \int_{x_{i}}^{x_{i+1}} \rho(x) \ \varphi_i (x) \varphi_{i+1} (x) \ dx + \int_{x_{i}}^{x_{i+1}} \mu(x) \ \varphi_i' (x) \varphi_{i+1}' (x) \ dx =
+\end{equation}
+\begin{equation*}
+    = \int_{x_i}^{x_{i+1}} \rho(x) \frac{x_{i+1} - x}{h} \frac{x - x_i}{h} \ dx + \int_{x_{i-1}}^{x_{i}} \mu(x) \frac{1}{h} \left( - \frac{1}{h} \right) \ dx
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\linewidth]{comp_A3.png}
+    \caption{Computation of $ [A]_{i, i+1} $}
+\end{figure}
+
+We may notice that, for each element on the diagonal $ [A]_{i,i} $, we have two other components along the same row (figure \ref{fig:assembly}).
+
+\subsection{Reference element}
+
+All entries are integrals over specific intervals $ k_{i-1}, k_i $ \eqref{eq:mesh_1D}, in which both an ascending and a descending segment may be present.
+In order to obtain expressions as generalized as possible, we want to define a \textbf{reference element} of domain $ \hat{k} = (0,1) $ to map at each interval $ k_i $:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{reference.png}
+    \caption{Reference element and original interval}
+    \label{fig:reference}
+\end{figure}
+
+The reference interval $ \hat{k} $ is function of $ \xi \in (0,1) $ (instead of $ x $) and the mapping $ \phi_i $ allows to get a specific interval:
+\begin{equation}
+    k_i = \phi_i (\hat{k}), \quad x = \phi_i (\xi) = x_i + \xi h \in (0,L)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{reference_mapping.png}
+    \caption{Reference mapping}
+\end{figure}
+
+As pictured in figure \ref{fig:reference}, we want to express the physical basis functions $ \varphi_i $ in function of the reference basis functions $ \hat{\varphi}_0 $ and $ \hat{\varphi}_1 $:
+\begin{equation}
+    \hat{\varphi}_0 (\xi) = 1-\xi \overset{\phi_{i-1}}{\Longrightarrow} \varphi_{i-1} (x) = \hat{\varphi}_0 \left( \phi_{i-1}^{-1} (x) \right) = \hat{\varphi}_0 (\xi) = \hat{\varphi}_0 \left( \frac{x - x_{i-1}}{h} \right)
+\end{equation}
+\begin{equation}
+    \hat{\varphi}_1 (\xi) = \xi \overset{\phi_{i-1}}{\Longrightarrow} \varphi_i (x) = \hat{\varphi}_1 \left( \phi_{i-1}^{-1} (x) \right) = \hat{\varphi}_1 (\xi) = \hat{\varphi}_1 \left( \frac{x - x_{i-1}}{h} \right)
+\end{equation}
+
+Finally, we can express all matrix entries $ [A]_{i,j} $ using the reference element ($ h $ in front of $ d\xi $ is the Jacobian of the transformation):
+\begin{equation}
+    [A]_{i, i-1} = \int_{x_{i-1}}^{x_{i}} \rho(x) \ \varphi_{i-1} (x) \varphi_i (x) \ dx + \int_{x_{i-1}}^{x_{i}} \mu(x) \ \varphi_{i-1}' (x) \varphi_i' (x) \ dx = 
+\end{equation}
+\begin{equation*}
+    = \int_0^1 \rho(x) \ \hat{\varphi}_0 (\xi) \hat{\varphi}_1 (\xi) \ h d\xi + \int_0^1 \mu(x) \ \hat{\varphi}'_0 (\xi) \hat{\varphi}'_1 (\xi) \ h d\xi
+\end{equation*}
+
+\begin{equation}
+    [A]_{i, i} = \int_{x_{i-1}}^{x_{i}} \rho(x) \ \varphi_{i} (x) \varphi_i (x) \ dx + \int_{x_{i-1}}^{x_{i}} \mu(x) \ \varphi_{i}' (x) \varphi_i' (x) \ dx + 
+\end{equation}
+\begin{equation*}
+    + \int_{x_{i}}^{x_{i+1}} \rho(x) \ \varphi_{i} (x) \varphi_i (x) \ dx + \int_{x_{i}}^{x_{i+1}} \mu(x) \ \varphi_{i}' (x) \varphi_i' (x) \ dx =
+\end{equation*}
+\begin{equation*}
+    = \int_0^1 \rho(x) \ \hat{\varphi}_0 (\xi) \hat{\varphi}_0 (\xi) \ h d\xi + \int_0^1 \mu(x) \ \hat{\varphi}'_0 (\xi) \hat{\varphi}'_0 (\xi) \ h d\xi +
+\end{equation*}
+\begin{equation*}
+    + \int_0^1 \rho(x) \ \hat{\varphi}_1 (\xi) \hat{\varphi}_1 (\xi) \ h d\xi + \int_0^1 \mu(x) \ \hat{\varphi}'_1 (\xi) \hat{\varphi}'_1 (\xi) \ h d\xi
+\end{equation*}
+
+\begin{equation}
+    [A]_{i, i+1} = \int_{x_{i}}^{x_{i-1}} \rho(x) \ \varphi_i (x) \varphi_{i+1} (x) \ dx + \int_{x_{i}}^{x_{i+1}} \mu(x) \ \varphi_i' (x) \varphi_{i+1}' (x) \ dx = 
+\end{equation}
+\begin{equation*}
+    = \int_0^1 \rho(x) \ \hat{\varphi}_1 (\xi) \hat{\varphi}_0 (\xi) \ h d\xi + \int_0^1 \mu(x) \ \hat{\varphi}'_1 (\xi) \hat{\varphi}'_0 (\xi) \ h d\xi
+\end{equation*}
+
+The result is that we need to implement eight integrals to compute all entries of $ [A] $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{integrals.png}
+    \caption{All integrals for three entries of $ [A] $}
+\end{figure}
+
+We are considering two intervals $ k_{i-1} $ and $ k_i $ (three grid points $  x_{i-1} $, $ x_i $ and $ x_{i+1} $), so each interval needs only four integrals.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{integrals_2.png}
+    \caption{All integrals for one interval $ k_i $}
+\end{figure}
+
+We may use the last consideration to loop over the diagonal elements to compute all entries, defining the \textbf{assembly} of $ [A] $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{assembly.png}
+    \caption{Assembly of matrix [A], loop over element}
+    \label{fig:assembly}
+\end{figure}
+
+\subsection{Quadrature rules}
+
+The last step to compute the numerical solution of a one-dimension physical problem such as \eqref{eq:strong_form_Neumann} is to define a way to evaluate a generic integral:
+\begin{equation*}
+    \int_0^1 f(x) \ dx
+\end{equation*}
+
+We may use different \textbf{quadrature rules}, which are generally defined as (number of grid points $ N_q $ with weight $ w_q \in \mathbb{R} $ at position $ x_q \in (0,1) $):
+\begin{equation}
+    \int_0^1 f(x) \ dx \approx \sum_{j=1}^{N_q} w_q f(x_q)
+\end{equation}
+
+Using $ p+1 $ points, the maximum degree of precision is $ 2p+1 $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{quad_1.png}
+    \includegraphics[width=0.35\linewidth]{quad_2.png}
+    \includegraphics[width=0.35\linewidth]{quad_3.png}
+    \includegraphics[width=0.35\linewidth]{quad_4.png}
+    \caption{Quadrature rules (trapezoidal, mid-point, ?, Cavalieri-Simpson)}
+    \label{fig:quad_rules}
+\end{figure}
+
+Trapezoidal rule:
+\begin{equation}
+    \int_0^1 f(x) \ dx = \frac{f(0) + f(1)}{2} (1-0) = \frac{1}{2} f(0) + \frac{1}{2} f(1)
+\end{equation}
+
+Mid-point rule:
+\begin{equation}
+    \int_0^1 f(x) \ dx = f \left( \frac{1}{2} \right) (1-0) = 1 \frac{1}{2} f(1)
+\end{equation}
+
+\clearpage

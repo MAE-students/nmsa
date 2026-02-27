@@ -1,0 +1,277 @@
+\section{Lesson 8}\label{sec:les_08}
+
+\subsection{Accuracy of the Spectral Element Method}
+
+The \textbf{approximation errors} for $ L^2 (\Omega) $ and $ H^1 (\Omega) $, for stationary problems (like Helmholtz), are (polynomial degree $p$, regularity of the solution $r$):
+\begin{equation}
+    \norm{u-u_h}_{L^2(\Omega)} < k \ \frac{h^{p+1}}{p^r}, \quad \norm{u-u_h}_{H^1(\Omega)} < k \ \frac{h^p}{p^r}
+\end{equation}
+
+It is possible to improve the accuracy of the approximation (decrease the error) by choosing polynomials of higher orders, in addition to refining the mesh (lowering $h$).
+
+When adding the leap-frog scheme to the numerical method, the time discretization brings an error component in the approximation:
+\begin{equation}
+    \norm{u-u_h(T)}_{L^2(\Omega)} < k \ h^{p+1} + \Delta t^2, \quad \norm{u-u_h(T)}_{H^1(\Omega)} < k \ h^p + \Delta t^2
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{SEM_error.png}
+    \caption{Influence of the time discretization on the approximation error}
+\end{figure}
+
+Whenever one of the mesh parameters ($h$, $\Delta t$) is very small, the other will be dominant in the error evaluation.
+
+\subsection{Spectral Element Method in 2D and 3D}
+
+In section \ref{sec:les_07} we introduced the spectral element method in a finite one-dimensional space domain.
+We want now to extend the study of the wave problem to greater space domains $ \Omega $:
+\begin{equation}\label{eq:SEM_2D}
+    \rho \ \partial_{tt} u - \nabla (\mu \nabla u) = f, \quad x \in \Omega, \quad t \in (0,T]
+\end{equation}
+
+The problem is complete, as usual, when we add initial conditions (in time) and boundary conditions (in space).
+Let's assume Dirichlet conditions on a portion of border $ \partial \Omega $ and Neumann conditions on the remaining:
+\begin{equation}
+    \begin{cases}
+        u(x,t) = 0, & x \in \Gamma_D, & t \in (0,T] \\[3pt]
+        \mu \nabla u \cdot \underline{n} = 0, & x \in \Gamma_N, & t \in (0,T]
+    \end{cases}
+    , \quad \Gamma_D \cup \Gamma_N = \partial \Omega, \quad \Gamma_D \cap \Gamma_N = \varnothing 
+\end{equation}
+
+The boundary conditions are applied to the border $ \partial \Omega $, which has $ \dim (\partial \Omega) = \dim (\Omega) -1 $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{SEM_2D.png}
+    \caption{Dirichlet and Neumann conditions on the border $ \partial \Omega $ in 2D}
+\end{figure}
+
+As usual, the weak formulation is obtained by multiplying all terms of the wave equation by the test function $v$ and integrate in the space domain $ \Omega $ (as in \eqref{eq:weak_intro}):
+\begin{equation}
+    \int_{\Omega} \rho \ \partial_{tt} u \ v \ d\Omega - \int_{\Omega} \nabla (\mu \nabla u) \ v \ d\Omega = \int_{\Omega} fv \ d\Omega
+\end{equation}
+
+Using the divergence theorem:
+\begin{equation}
+    \int_{\Omega} \nabla (\mu \nabla u \ v) \ d\Omega = \int_{\Omega} \nabla (\mu \nabla u) \ v \ d\Omega + \int_{\Omega} (\mu \nabla u) \nabla v \ d\Omega = \int_{\partial \Omega} (\mu \nabla u) \cdot \underline{n} \ v \ d\Gamma
+\end{equation}
+\begin{equation*}
+    - \int_{\Omega} \nabla (\mu \nabla u) \ v \ d\Omega = \int_{\Omega} (\mu \nabla u) \nabla v \ d\Omega - \int_{\partial \Omega} (\mu \nabla u) \cdot \underline{n} \ v \ d\Gamma
+\end{equation*}
+
+According to the boundary conditions:
+\begin{equation}
+     \int_{\Gamma_D} (\mu \nabla u) \cdot \underline{n} \ v \ d\Gamma = 0 \text{ choosing $v=0$ on $ \Gamma_D $}, \quad \int_{\Gamma_N} (\mu \nabla u) \cdot \underline{n} \ v \ d\Gamma = 0 \text{ for Neumann }
+\end{equation}
+
+In order to add the constraint on $v$ along $ \Gamma_D $, we define a new subspace (as in \eqref{eq:piece_wise_zero}):
+\begin{equation}
+    H_{\Gamma_D}^1 = \left\{ v : \Omega \rightarrow \mathbb{R} \text{ so that } v \in H^1(\Omega), v=0 \text{ on $\Gamma_D$} \right\}
+\end{equation}
+
+We remind the definition of $H^1$ at \eqref{eq:Hilbert}.
+
+The \textbf{weak formulation} for \eqref{eq:SEM_2D} states that $ u \in V = H_{\Gamma_D}^1(\Omega) $ is solution of ($ \forall t \in (0,T] $):
+\begin{equation}
+    \int_{\Omega} \rho \ \partial_{tt} u \ v \ d\Omega + \int_{\Omega} \mu \nabla u \nabla v \ d\Omega = \int_{\Omega} fv \ d\Omega, \quad \forall v \in V
+\end{equation}
+\begin{equation*}
+    \Leftrightarrow m (\partial_{tt} u, v) + a(u,v) = F(v)
+\end{equation*}
+
+If in a one-dimensional space we have $ \partial_x u $ and $ \partial_x v $ only, in a two-dimensional space we have (for examples):
+\begin{equation}
+    \mu \nabla u \nabla v = \mu \left( \partial_x u \ \partial_x v + \partial_y u \ \partial_y v \right)
+\end{equation}
+
+The spectral element formulation, as in finite elements, starts from the space domain discretization and the subspace $V_h$ definition:
+\begin{equation}
+    V_h \subset V = H_{\Gamma_D}^1(\Omega), \quad \dim (V_h) < + \infty
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{2D_mesh.png}
+    \caption{Example of 2D mesh}
+\end{figure}
+
+By meshing the space domain $ \Omega $, we obtain a triangulation $ \tau_h $, made by quadrilaterals (in 2D) or hexahedra (in 3D) called $ k_m $.
+Each element $ k_m $ is the result of mapping a reference element $ \hat{k} $:
+\begin{equation}
+    k_m = F_m(\hat{k})
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\linewidth]{SEM_triangulation.png}
+    \caption{Reference element $\hat{k}$ for 2D and 3D domains}
+\end{figure}
+
+We need now to define the polynomials basis functions, in the local space of the reference element, using GLL points and weights.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Reference_GLL.png}
+    \caption{GLL grid and reference element in 2D}
+\end{figure}
+
+We apply the basis functions along $x$ and $y$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Basis_x.png}
+    \includegraphics[width=0.2\linewidth]{Basis_y.png}
+    \caption{Basis function applied along $x$ (left) and $y$ (right)}
+\end{figure}
+
+Considering $n+1$ points along $x$ and $n+1$ along $y$, we have $(n+1)^2$ basis functions:
+\begin{equation}
+    \left\{ \psi_k \right\}_{k=1}^{(n+1)^2} = \left\{ \varphi_i^x \ \varphi_j^y \right\}_{i,j=1}^{n+1}
+\end{equation}
+
+The subspace we obtain through the space discretization is:
+\begin{equation}
+    V_h = \left\{ v \in C^0(\Omega) \text{ so that } v|_{k_m} \in \mathbb{Q}^n(k_m), \forall k_m \text{ and $ v=0 $ on $\Gamma_D$} \right\}
+\end{equation}
+
+Where $ \mathbb{Q}^n $ is the space of polynomials of degree $\leq n$ in each dimension.
+Let's analyse, for example, the canonical basis for $n=3$:
+\begin{itemize}
+    \item x-direction: $ \{ 1, x, x^2, x^3 \} $
+    \item y-direction: $ \{ 1, y, y^2, y^3 \} $
+    \item tensor product: $ \{ 1, x, x^2, x^3, y, y^2, y^3, xy, xy^2, xy^3, x^2y, x^2y^2, x^2y^3, x^3y, x^3y^2, x^3y^3 \} $
+\end{itemize}
+
+The \textbf{spectral element formulation} states that $ u_h \in V_h $ is solution of:
+\begin{equation}
+    m (\partial_{tt} u_h, v_h) + a(u_h,v_h) = F(v_h), \quad \forall t \in (0,T]
+\end{equation}
+
+The \textbf{algebraic formulation} is obtained, as usual, following the logic of \eqref{eq:alg_form_Neumann}, which is defining $ u_h \in V_h $ as linear combination of basis functions and $ v_h = \varphi_i $ as in \eqref{eq:Vh_basis}:
+\begin{equation}
+    u_h(\underline{x}, t) = \sum_{j=1}^{N_h} u_j(t) \ \psi_j(\underline{x}), \quad v_h = \psi_i(\underline{x})
+\end{equation}
+\begin{equation*}
+    \sum_{j=1}^{N_h} \partial_{tt} u_j \ m(\psi_j, \psi_i) + u_j \ a(\psi_j, \psi_i) = F(\psi_i), \quad \forall i = 1, \cdots, N_h
+\end{equation*}
+\begin{equation*}
+    \sum_{j=1}^{N_h} \partial_{tt} u_j \ [M]_{ij} + u_j \ [A]_{ij} = F_i, \quad \forall i = 1, \cdots, N_h \Rightarrow [M] \ \ddot{\underline{u}} + [A] \ \underline{u} = \underline{F}
+\end{equation*}
+
+We have, as usual, mass $[M]$, stiffness $[A]$ and right-hand side $\underline{F}$.
+
+Having defined the basis functions $\psi_k$ as tensor product of one-dimensional functions $ \varphi_i^x \ \varphi_j^y $, it preserves the structure of $[M]$, which is still diagonal.
+So, it is easy to extend the spectral element discretization in more dimensions, we only need to make the tensor product between one-dimensional nodes (to make the local grid) and between basis functions (to make $V_h$ basis functions) along the different axis.
+
+This tensor product structure is the result of using a quadrilateral mesh.
+We can use triangular mesh applying an additional mapping $ \phi^T $, which is singular (non-linearity and non-trivial computation of basis functions).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Duffy_trans.png}
+    \caption{Discretization of non-canonical space domains}
+\end{figure}
+
+As usual, we may define different boundary conditions along $ \partial \Omega $, such as impedance, PML, robin and periodic.
+
+\subsection{Newmark scheme for time integration}
+
+We want now to invert the algebraic formulation:
+\begin{equation}
+    [M] \ \ddot{\underline{u}} + [A] \ \underline{u} = \underline{F} \Rightarrow \ddot{\underline{u}} = [M]^{-1} \left( \underline{F} - [A] \ \underline{u} \right)
+\end{equation}
+
+We introduce an auxiliary variable $ \underline{z} = \dot{\underline{u}} $ and obtain a new system:
+\begin{equation}
+    \begin{cases}
+        \dot{\underline{z}} = [M]^{-1} \left( \underline{F} - [A] \ \underline{u} \right) \\[3pt]
+        \dot{\underline{u}} = \underline{z}
+    \end{cases}
+\end{equation}
+
+We make in evidence the time stamp $ t_k \in (0,T] $:
+\begin{equation}
+    \underline{z}_k = \underline{z} (t_k), \quad \underline{u}_k = \underline{u} (t_k), \quad \underline{F}_k = \underline{F} (t_k), \quad \underline{\mathcal{L}}_k = \dot{\underline{z}} (t_k)
+\end{equation}
+
+The \textbf{Newmark scheme} (similar to a Taylor expansion) is:
+\begin{equation}\label{eq:Newmark_scheme}
+    \begin{cases}
+        \underline{u}_{k+1} = \underline{u}_k + \Delta t \ \underline{z}_k + \Delta t^2 \left( \beta \ \underline{\mathcal{L}}_{k+1} + \left( \frac{1}{2} - \beta \right) \underline{\mathcal{L}}_k \right) \\[3pt]
+        \underline{z}_{k+1} = \underline{z}_k + \Delta t \left( \gamma \ \underline{\mathcal{L}}_{k+1} + \left( 1 - \gamma \right) \underline{\mathcal{L}}_k \right) \\[3pt]
+    \end{cases}
+\end{equation}
+
+We have two parameters $ 0 \leq 2 \beta \leq 1 $ and $ 0 \leq \gamma \leq 1 $ that we can choose in specific ways:
+\begin{itemize}
+    \item $ \gamma = \dfrac{1}{2}, \beta = \dfrac{1}{4} \Rightarrow $ scheme is \textbf{implicit} and \textbf{2nd order accurate} (in time), the drawback is that we need to invert both mass and stiffness matrixes (not diagonal anymore)
+    \item $ \gamma \neq \dfrac{1}{2} \Rightarrow $ scheme is \textbf{1st order accurate}
+    \item $ \beta = 0 \Rightarrow $ scheme is \textbf{explicit}
+\end{itemize}
+
+\subsection{Hyperbolic equations}
+
+We want to solve the usual 2nd order wave equation using a different approach:
+\begin{equation}
+    \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f \Leftrightarrow \partial_t \left( \rho \ \partial_t u \right) - \partial_x \left( \mu \ \partial_x u \right) = f \Leftrightarrow \partial_t w_1 - \partial_x w_2 = f
+\end{equation}
+\begin{equation*}
+    \left.
+    \begin{array}{c}
+        \partial_x w_1 = \rho \ \partial_{tx} u \\[3pt]
+        \partial_t w_2 = \mu \ \partial_{xt} u
+    \end{array}
+    \right] \Rightarrow
+    \partial_t w_2 = \frac{\mu}{\rho} \partial_x w_1 \Rightarrow 
+    \begin{cases}
+        \partial_t w_1 - \partial_x w_2 = f \\[3pt]
+        \partial_t w_2 - \frac{\mu}{\rho} \partial_x w_1 = 0
+    \end{cases}
+\end{equation*}
+\begin{equation*}
+    \underline{w} = 
+    \begin{pmatrix}
+        w_1 \\[3pt]
+        w_2
+    \end{pmatrix}
+    \Rightarrow \partial_t
+    \begin{pmatrix}
+        w_1 \\[3pt]
+        w_2
+    \end{pmatrix}
+    - 
+    \begin{bmatrix}
+        0 & -1 \\[3pt]
+        -\frac{\mu}{\rho} & 0
+    \end{bmatrix}
+    \partial_x
+    \begin{pmatrix}
+        w_1 \\[3pt]
+        w_2
+    \end{pmatrix}
+    = 
+    \begin{pmatrix}
+        f \\[3pt]
+        0
+    \end{pmatrix}
+    \Leftrightarrow \partial_t \underline{w} - [A] \ \partial_x \underline{w} = \underline{F}
+\end{equation*}
+
+In order to solve this problem, we want to find the eigenvalues of $[A]$:
+\begin{equation}
+    \det ([A] - \lambda [I]) = 0 \Rightarrow \lambda^2 - \frac{\mu}{\rho} = 0 \Rightarrow \lambda_{1,2} = \pm \sqrt{\frac{\mu}{\rho}} = \pm c
+\end{equation}
+
+We have two \textbf{real eigenvalues}, so we talk about \textbf{hyperbolic problem}, which is complete when we add both boundary conditions and initial conditions:
+\begin{equation}
+    \underline{w}(x,0) = \underline{w}_0 = 
+    \begin{pmatrix}
+        w_1(x,0) \\[3pt]
+        w_2(x,0)
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \rho \ \partial_t u(x,0) \\[3pt]
+        \mu \ \partial_x u(x,0)
+    \end{pmatrix}
+\end{equation}
+
+Defining a \textbf{conservative form} (for constant $c$).
+The evolution of this kind of problems will see different types of discretization (although we can always use finite element method).
+
+\clearpage

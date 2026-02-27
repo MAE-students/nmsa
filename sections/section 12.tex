@@ -1,0 +1,285 @@
+\section{Lesson 12}\label{sec:les_12}
+
+In this lesson, we want to present an alternative to finite element and finite difference methods, called finite volume method.
+
+\subsection{From finite difference ...}
+
+Let's consider the Burger's equation as in \eqref{eq:Burger}, with the following initial condition $u_0(x)$:
+\begin{equation}
+    u_0(x) =
+    \begin{cases}
+        -1, & x < 0 \\[3pt]
+        1, & x > 0
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Burger_volume.png}
+    \caption{Burger's equation and discontinuity $u_L < u_R$}
+\end{figure}
+
+The discontinuity $u_L < u_R$ describes a rarefaction wave scenario (defined in \eqref{eq:rarefaction}), which has an entropic solution:
+\begin{equation}
+    \begin{cases}
+        -1, & x < - t \\[3pt]
+        \dfrac{x}{t}, & - t \leq x \leq t \\[3pt]
+        +1, & x > t
+    \end{cases}
+\end{equation}
+
+Its temporal evolution spreads the discontinuity we have in $x=0$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Solution_evolution.png}
+    \caption{Temporal evolution at time instants $0<t'<t"$}
+\end{figure}
+
+We remind that we have infinite solutions, so we have also bad solutions, like $ u(x,t) = u_0(x) $.
+The \textbf{speed of the propagation shock} is:
+\begin{equation}
+    \sigma = \frac{[F]}{[u]} = \frac{u_L + u_R}{2} = \frac{-1+1}{2} = 0
+\end{equation}
+
+Let's discretize the space domain $ \mathbb{R} $ using a Cartesian grid excluding the discontinuity point $x=0$.
+The initial conditions state:
+\begin{equation}
+    u_j^0 =
+    \begin{cases}
+        -1, & j<0 \\[3pt]
+        1, & j>0
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\linewidth]{Cartesian_grid.png}
+    \caption{Cartesian grid without discontinuity point and initial conditions $u_j^0$}
+\end{figure}
+
+We choose to apply an upwind scheme, in conservative form, to this problem as:
+\begin{equation}
+    u_j^{n+1} = u_j^n - \frac{\Delta t}{h} \left[ F(u_{j+1}, u_j) - F(u_j, u_{j-1}) \right]
+\end{equation}
+\begin{equation*}
+    \quad F(v,w) =
+    \begin{cases}
+        F(v), & \sigma \geq 0 \\[3pt]
+        F(w), & \sigma < 0
+    \end{cases}
+    , \quad \sigma = \frac{F(v) - F(w)}{v-w}
+\end{equation*}
+
+When we evaluate $F(u_{j+1}, u_j)$ we have three scenarios: both points $x_{j+1}$ and $x_j$ are positive, negative or one is positive and one is negative.
+\begin{equation}
+    F(v) = \frac{v^2}{2}, \quad F(u_{j+1}, u_j) =
+    \begin{cases}
+        F(-1,-1) = F(-1) = \frac{1}{2} \\[3pt]
+        F(1,-1) = F(1) = \frac{1}{2} \\[3pt]
+        F(1,1) = F(1) = \frac{1}{2}
+    \end{cases}
+\end{equation}
+
+The solution computation becomes easy:
+\begin{equation}
+    \begin{array}{c}
+        n=0 \Rightarrow u_j^1 = u_j^0 - \frac{\Delta t}{h} \cancel{\left( \frac{1}{2} - \frac{1}{2} \right)} = u_j^0 \\[3pt]
+        n=1 \Rightarrow u_j^2 = u_j^1 - \frac{\Delta t}{h} \cancel{\left( \frac{1}{2} - \frac{1}{2} \right)} = u_j^1 \\[3pt]
+        \Rightarrow u_j^{n+1} = u_j^n = u_j^{n-1} = \cdots = u_j^2 = u_j^1 = u_j^0, \quad \forall n, \ \forall j
+    \end{array}
+\end{equation}
+
+This scheme converges to the bad solution $u_0(x)$: we want to avoid that.
+We can try fixing that by including the discontinuity in the Cartesian grid:
+\begin{equation}
+    u_j^0 =
+    \begin{cases}
+        -1, & j<0 \\[3pt]
+        0, & j=0 \\[3pt]
+        1, & j>0
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Cartesian_grid_2.png}
+    \caption{Cartesian grid with discontinuity point and initial conditions $u_j^0$}
+\end{figure}
+
+We want a better remedy: we are looking for schemes that satisfy the entropic condition for the non-linear hyperbolic equations \eqref{eq:non_lin_hyper}.
+
+\subsection{... To finite volume schemes}
+
+We need to introduce a new method because finite element and finite difference schemes are not good in proximity of discontinuities.
+\textbf{Finite volume schemes} rely on the integral form of the problem and conserve the quantities (solution) at discrete level.
+
+Let's take the problem \eqref{eq:non_lin_hyper} and integrate over the space domain $ x \in (a,b) $:
+\begin{equation}
+    \partial_t u + \partial_x F(u) = 0, \quad \int_a^b \partial_t u \ dx = \partial_t \left( \int_a^b u \ dx \right) = - \int_a^b \partial_x F(u) \ dx = - \left[ F(u(b)) - F(u(a)) \right]
+\end{equation}
+
+The idea behind finite volume schemes is to shift the computation from grid points (as in finite element and finite difference schemes) to cells.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Finite_volume_scheme.png}
+    \caption{Finite volume cells}
+\end{figure}
+
+It is like approximating the function in a step-like fashion:
+\begin{equation}
+    u_i = \frac{1}{\Delta x_i} \int_{x_{i-\frac{1}{2}}}^{x_{i+\frac{1}{2}}} u \ dx \Rightarrow \int_{x_{i-\frac{1}{2}}}^{x_{i+\frac{1}{2}}} u \ dx = \Delta x_i \ u_i
+\end{equation}
+\begin{equation*}
+    \partial_t \left( \int_{x_{i-\frac{1}{2}}}^{x_{i+\frac{1}{2}}} u \ dx \right) = \partial_t \left( \Delta x_i \ u_i \right) = F \left( u(x_{i-\frac{1}{2}}, t) \right) - F \left( u(x_{i+\frac{1}{2}}, t) \right)
+\end{equation*}
+\begin{equation*}
+    \int_{t_n}^{t_{n+1}} \partial_t \left( \Delta x_i \ u_i \right) dt = \int_{t_n}^{t_{n+1}} F \left( u(x_{i-\frac{1}{2}}, t) \right) - F \left( u(x_{i+\frac{1}{2}}, t) \right) \ dt
+\end{equation*}
+\begin{equation*}
+    \Delta x_i \ \left( u_i(t_{n+1}) - u_i(t_n) \right) = \int_{t_n}^{t_{n+1}} F \left( u(x_{i-\frac{1}{2}}, t) \right) - F \left( u(x_{i+\frac{1}{2}}, t) \right) \ dt
+\end{equation*}
+\begin{equation*}
+    u_i(t_{n+1}) - u_i(t_n) = \frac{1}{\Delta x_i} \int_{t_n}^{t_{n+1}} F \left( u(x_{i-\frac{1}{2}}, t) \right) - F \left( u(x_{i+\frac{1}{2}}, t) \right) \ dt
+\end{equation*}
+
+The evolution of the cell average $u_i$ depends on the definition of the numerical flux $F(u(x,t))$.
+The problem is that in $x_{i \pm \frac{1}{2}}$, as any other grid node, we have two values of $u$.
+That is because we know the value of $u_i$ at the center of the cell, not at the edges.
+We talk about \textbf{flux reconstruction}:
+\begin{equation}
+    F \left( u(x_{i-\frac{1}{2}}, t) \right) \approx F_{i-\frac{1}{2}}, \quad \partial_t \left( \sum_{i=1}^{N} u_i \ \Delta x_i \right) = \sum_{i=1}^{N} F_{i-\frac{1}{2}} - F_{i+\frac{1}{2}} = F_{\frac{1}{2}} - F_{N+\frac{1}{2}}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Finite_volume_cells.png}
+    \caption{Space domain discretization and finite volume cells}
+\end{figure}
+
+The scheme is \textbf{conservative} because the points computation depends only on initial and final flux.
+
+We can define the flux as we want, resulting in different schemes, but they are all conservative.
+We define the \textbf{central flux scheme}, making a Taylor expansion to compute $ u(x_{i+\frac{1}{2}}) $ using only averages values:
+\begin{equation}
+    u(x_{i+\frac{1}{2}} + \Delta x_{i+1}) = u_{i+1} = u(x_{i+\frac{1}{2}}) + \Delta x_{i+1} \ \partial_x u ( x_{i+\frac{1}{2}} ) + \frac{\Delta x_{i+1}^2}{2} \ \partial_{xx} u ( x_{i+\frac{1}{2}}) =
+\end{equation}
+\begin{equation*}
+    = u_{i+\frac{1}{2}} + \Delta x_{i+1} \ \partial_x u ( x_{i+\frac{1}{2}} ) + \frac{\Delta x_{i+1}^2}{2} \ \partial_{xx} u ( x_{i+\frac{1}{2}})
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\linewidth]{Central_flux.png}
+    \caption{Central flux scheme}
+\end{figure}
+\begin{equation*}
+    u_{i+1} = \frac{1}{\Delta x_{i+1}} \int_0^{\Delta x_{i+1}} u(x_{i+\frac{1}{2}} + \Delta x_{i+1}) \ dx
+\end{equation*}
+\begin{equation*}
+     \Rightarrow u_{i+1} = u_{i+\frac{1}{2}} + \frac{\Delta x_{i+1}}{2} \ \partial_x u + \frac{\Delta x_{i+1}^2}{6} \ \partial_{xx} u
+\end{equation*}
+
+Repeating for $u_i$:
+\begin{equation}
+    u_i = \frac{1}{\Delta x_i} \int_{-\Delta x_i}^0 u(x_{i+\frac{1}{2}} - \Delta x_{i+1}) \ dx = \cdots = u_{i+\frac{1}{2}} - \frac{\Delta x_i}{2} \ \partial_x u + \frac{\Delta x_i^2}{6} \ \partial_{xx} u
+\end{equation}
+
+We want to satisfy the following:
+\begin{equation}
+    \begin{cases}
+        u_{i+\frac{1}{2}}^{-} = b \left( u_{i+1} - \dfrac{\Delta x_{i+1}}{2} \ \partial_x u - \dfrac{\Delta x_{i+1}^2}{6} \ \partial_{xx} u \right) \\[3pt]
+        u_{i+\frac{1}{2}}^{+} = a \left( u_i + \dfrac{\Delta x_i}{2} \ \partial_x u - \dfrac{\Delta x_i^2}{6} \ \partial_{xx} u \right)
+    \end{cases}
+\end{equation}
+
+\begin{equation*}
+    \Rightarrow 2 u_{i+\frac{1}{2}} = a \ u_i + b \ u_{i+1} + \left( a \ \Delta x_i - b \ \Delta x_{i+1} \right) + \frac{1}{2} \partial_x u + \cdots \Rightarrow
+    \begin{cases}
+        a+b=1 \\[3pt]
+        a \ \Delta x_i - b \ \Delta x_{i+1} = 0
+    \end{cases}
+\end{equation*}
+
+If the grid is uniform ($ \Delta x_i = \Delta x_{i+1} $), we talk about \textbf{volume average}:
+\begin{equation}
+    a = b = \frac{1}{2}
+\end{equation}
+
+Otherwise, we talk about \textbf{weighted volume average}:
+\begin{equation}
+    a = \frac{\Delta x_{i+1}}{\Delta x_i + \Delta x_{i+1}}, \quad b = \frac{\Delta x_i}{\Delta x_i + \Delta x_{i+1}}
+\end{equation}
+
+As a result:
+\begin{equation}
+    u_{i+\frac{1}{2}} = a \ u_i + b \ u_{i+\frac{1}{2}}, \quad F_{i+\frac{1}{2}} =
+    \begin{cases}
+        F(a \ u_i + b \ u_{i+\frac{1}{2}}), & \Delta x_i \neq \Delta x_{i+1} \\[3pt]
+        \frac{1}{2} F(u_i) + \frac{1}{2} F(u_{i+1}), & \Delta x_i = \Delta x_{i+1}
+    \end{cases}
+\end{equation}
+
+We want now, for each cell, the profile of $u$ to be:
+\begin{equation}
+    \partial_t u_i = \frac{1}{\Delta x_i} \left( F_{i-\frac{1}{2}} - F_{i+\frac{1}{2}} \right)
+\end{equation}
+
+The computation consists in a time integration: we can choose the integration method we prefer.
+Let's make an example with initial condition $u_0(x) = \sin (2 \pi x)$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Finite_volume_sin.png}
+    \caption{Example of initial condition discretization}
+\end{figure}
+\begin{equation}
+    u_0^i = \frac{1}{\Delta x_i} \int_{x_{i-\frac{1}{2}}}^{x_{i+\frac{1}{2}}} \sin (2 \pi x) \ dx = - \frac{1}{2 \pi} \frac{\cos (2 \pi x_{i+\frac{1}{2}}) - \cos (2 \pi x_{i-\frac{1}{2}})}{\Delta x_i}
+\end{equation}
+
+This scheme is 2nd order accurate, by construction, but we have spurious oscillations and does not satisfy physics.
+The idea is to use the upwind scheme:
+\begin{equation}
+    \begin{array}{l}
+        \sigma>0: \quad F_{i+\frac{1}{2}} = F_i \\
+        \sigma<0: \quad F_{i+\frac{1}{2}} = F_{i+1}
+    \end{array}, \quad u_{i+\frac{1}{2}} =
+    \begin{cases}
+        u_i, & \sigma>0 \\[3pt]
+        u_{i+1}, & \sigma<0
+    \end{cases}
+\end{equation}
+
+This scheme in only 1st order accurate (only $a+b=1$ is satisfied), but it is conservative.
+On the other hand, it may happen that:
+\begin{equation}
+    u_i \approx u_{i+1} \Leftrightarrow \sigma \approx \infty \Rightarrow \sigma = \partial_u F = \partial_u \left( \frac{u^2}{2} \right) = u
+\end{equation}
+
+We can do better, for example with the \textbf{Godunov scheme} (1959), where the solution $u_j^n$ (at time $t^n = n \Delta t$) is obtained through a piece-wise reconstruction:
+\begin{equation}
+    \tilde{u} (x, t^n) = u_j^n, \quad x_{j-\frac{1}{2}} \leq x \leq x_{j+\frac{1}{2}}
+\end{equation}
+
+We compute $\tilde{u} (x, t^{n+1})$ as solution of the Riemann problem in $[t^n, t^{n+1}]$, and then:
+\begin{equation}
+    u_j^{n+1} = \frac{1}{\Delta x_i} \int_{x_{j-\frac{1}{2}}}^{x_{j+\frac{1}{2}}} \tilde{u} (x, t^{n+1}) \ dx \Rightarrow u_j^{n+1} = u_j^n - \frac{\Delta t}{\Delta x_j} \left( F(u_{j+1}^n, u_j^n) - F(u_j^n, u_{j-1}^n) \right)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\linewidth]{Godunov.png}
+    \caption{Visualization of Godunov scheme}
+\end{figure}
+
+The \textbf{Godunov flux} is defined through $u^*$ so that the entropy condition is satisfied:
+\begin{equation}
+    F(u_L, u_R) = F(u^*(u_L,u_R)) =
+    \begin{cases}
+        \underset{u_L \leq u \leq u_R}{\min} F(u) & u_L < u_R \\[3pt]
+        \underset{u_L \leq u \leq u_R}{\max} F(u) & u_L > u_R
+    \end{cases}
+\end{equation}
+
+This is a 1st order accurate scheme because the flux reconstruction is piece-wise.
+We may define a 2nd order accurate scheme using a linear reconstruction (slope $s_i$):
+\begin{equation}
+    s_i = \frac{u_{i+1} - u_{i-1}}{2 \Delta x}, \quad u_{i+\frac{1}{2}}^{\pm} = u_i \pm \frac{\Delta x}{2} s_i, \quad F_{i+\frac{1}{2}} = F \left( u_{i+\frac{1}{2}}^{-}, u_{i+\frac{1}{2}}^{+} \right)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Godunov_linear.png}
+    \caption{Linear reconstruction for Godunov scheme}
+\end{figure}

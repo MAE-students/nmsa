@@ -1,0 +1,359 @@
+\section{Lesson 4}\label{sec:les_04}
+
+Since section \ref{sec:les_02}, we studied a time-independent physical problem \eqref{eq:strong_form_Neumann} with Neumann conditions \eqref{eq:Neumann}.
+We want to extend the study to \textbf{Dirichlet conditions} \eqref{eq:Dirichlet} and add the \textbf{time dependency} to \eqref{eq:strong_form_Neumann} as in \eqref{eq:wave_1D}.
+
+\subsection{Time-independent Dirichlet problem}
+
+We change \eqref{eq:strong_form_Neumann} using Dirichlet conditions as follows:
+\begin{equation}\label{eq:strong_form_Dirichlet}
+    \begin{cases}
+        \rho u - \partial_x \left( \mu \ \partial_x u \right) = f, \quad x \in (0,L) \\[3pt]
+        u (0) = \alpha,  \quad u (L) = \beta
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Dirichlet_cond.png}
+    \caption{Example of Dirichlet conditions}
+\end{figure}
+
+The weak formulation for \eqref{eq:strong_form_Dirichlet} is exactly \eqref{eq:weak_intro}, but integrating by parts does not immediately allow to cancel out terms:
+\begin{equation}\label{eq:weak_form_Dirichlet}
+    \int_0^L \rho u v \ dx - \int_0^L \partial_x \left( \mu \ \partial_x u \right) v \ dx = \int_0^L f v \ dx, \quad \forall v \in H^1 (0,L)
+\end{equation}
+\begin{equation*}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \ \partial_x v \ dx - \left[ \mu \ \partial_x u \ v \right]_0^L = \int_0^L f v \ dx
+\end{equation*}
+\begin{equation*}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \ \partial_x v \ dx - \mu (L) \ \partial_x u(L) \ v(L) + \mu (0) \ \partial_x u(0) \ v(0) = \int_0^L f v \ dx
+\end{equation*}
+
+On the other hand, we can choose $ v(x) $ so that the non-integral terms cancel out, introducing the following subspace:
+\begin{equation}
+    H_0^1 (0,L) = \left\{
+    v \in H^1 (0,L), v(0) = v(L) = 0
+    \right\} \subset H^1 (0,L)
+\end{equation}
+
+By choosing $ v(x) \in H_0^1 (0,L) $, the weak formulation \eqref{eq:weak_form_Dirichlet} becomes:
+\begin{equation}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx - \cancel{\mu (L) \ \partial_x u(L) \ v(L)} + \cancel{\mu (0) \ \partial_x u(0) \ v(0)} = \int_0^L f v \ dx
+\end{equation}
+\begin{equation*}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx = \int_0^L f v \ dx, \quad \forall v \in H_0^1 (0,L)
+\end{equation*}
+
+Which is exactly \eqref{eq:weak_simple}: the difference with the Neumann case is the choice of the test function $ v(x) $.
+Another difference is the introduction of an auxiliary variable $ R(x) $ to use in order to rewrite the problem in a new unknown $ w(x) \in H_0^1 (0,L) $ (with "zero conditions").
+\begin{equation}\label{eq:R_aux}
+    R(0) = \alpha, \quad R(L) = \beta, \quad R(x) = \alpha + \frac{\beta - \alpha}{L} x
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{zero_conditions.png}
+    \caption{Zero-conditions equivalent system}
+\end{figure}
+\begin{equation}\label{eq:w_aux}
+    w(x) = u(x) - R(x) \Rightarrow
+    \begin{cases}
+        w(0) = u(0) - R(0) = \alpha - \alpha = 0 \\[3pt]
+        w(L) = u(L) - R(L) = \beta - \beta = 0
+    \end{cases}
+    \Rightarrow w(x) \in H_0^1 (0,L)
+\end{equation}
+\begin{equation*}
+    u(x) = w(x) + R(x) \Rightarrow
+    \begin{cases}
+        \rho w - \partial_x \left( \mu \ \partial_x w \right) = f - \rho R + \partial_x \left( \mu \ \partial_x R \right) \\[3pt]
+        w(0) = w(L) = 0
+    \end{cases}
+\end{equation*}
+
+Result, the \textbf{weak formulation} of \eqref{eq:strong_form_Dirichlet} states that $ w \in H_0^1 (0,L) $ is solution of ($ \forall v \in H_0^1 (0,L) $):
+\begin{equation}
+    \int_0^L \rho w v \ dx + \int_0^L \mu \ \partial_x w \ \partial_x v \ dx = \int_0^L f v \ dx - \left[ \int_0^L \rho R v \ dx + \int_0^L \mu \ \partial_x R \ \partial_x v \ dx \right]
+\end{equation}
+
+Using bilinear forms \eqref{eq:bilin_form} and linear functionals \eqref{eq:lin_func}, we may express the weak formulation in the following equivalent form:
+\begin{equation}
+    a(w,v) = F(v) - a(R,v), \quad \forall v \in H_0^1 (0,L)
+\end{equation}
+
+Regarding the finite element method, we are now interested in defining a corresponding discrete subspace $ V_{h,0} \subset V = H_0^1 (0,L) $ (instead of $ V_h $ as in \eqref{eq:piece_wise}) as the set of \textbf{piecewise linear polynomials with zero conditions}:
+\begin{equation}\label{eq:piece_wise_zero}
+    V_{h,0} = \left\{v \in V_h, v(0) = v(L) = 0 \right\}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Vh0.png}
+    \caption{Example of piecewise linear polynomial with zero conditions}
+\end{figure}
+
+The new subspace \eqref{eq:piece_wise_zero} has the same basis of $ V_h $, excluding $ \varphi_0 $ and $ \varphi_{N_h} $ ($ \dim{V_{h,0}} = N_h -1 $).
+The solution $ w_h (x) \in V_{h,0} $ is (by definition) a linear combination of the basis functions $ \varphi_j (x) $:
+\begin{equation}\label{eq:Vh0_basis}
+    w_h (x) = \sum_{j=1}^{N_h-1} w_j \varphi_j (x), \quad w_h (x_i) = \sum_{j=1}^{N_h-1} w_j \varphi_j (x_i) = w_i
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Vh0_basis.png}
+    \caption{$ V_{h,0} $ basis, starting from $ V_h $ basis}
+\end{figure}
+
+The \textbf{finite element formulation} states that $ w_h \in V_{h,0} $ is solution of:
+\begin{equation}\label{eq:fe_form_Dirichlet}
+    a(w_h,v_h) = F(v_h) - a(R_h,v_h), \quad \forall v \in V_{h,0}
+\end{equation}
+
+The \textbf{algebraic formulation} is obtained applying \eqref{eq:Vh0_basis} into \eqref{eq:fe_form_Dirichlet} and choosing $ v_h = \varphi_i $ (same logic of \eqref{eq:alg_form_Neumann}):
+\begin{equation}\label{eq:alg_form_Dirichlet}
+    [A] \underline{w} = \underline{b} - [A] \underline{R}, \quad [A] \in \mathbb{R}^{N_h-1 \times N_h-1}, \quad \underline{b}, \underline{R} \in \mathbb{R}^{N_h-1}, \quad \underline{R} = 
+    \begin{pmatrix}
+        \alpha \\[3pt]
+        0 \\[3pt]
+        \vdots \\[3pt]
+        0 \\[3pt]
+        \beta
+    \end{pmatrix}
+\end{equation}
+
+In section \ref{sec:les_03} we defined a way to compute [A] entries for Neumann problems, and it is useful to use it to compute [A] entries for Dirichlet problems too.
+The difference to take into account is the absence of $ \varphi_0 $ and $ \varphi_{N_h} $.
+We may do that by manually changing the first and last row of $ [A] $ and $ \underline{b} $ as:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Dirichlet_matrix.png}
+    \caption{Matrix changes for Dirichlet problems (left), auxiliary function $ R $ for Dirichlet problems (right)}
+\end{figure}
+
+Notice that the matrix $ [A] $ is not symmetric anymore.
+
+Reminding that $ w $ (and so $ w_h $) has been defined with zero conditions \eqref{eq:w_aux}, the corresponding vector $ \underline{w} $ has zero conditions too, and we obtain the solution $ \underline{u} $ as:
+\begin{equation}
+    \underline{u} = \underline{w} + \underline{R} =
+    \begin{pmatrix}
+        0 \\[3pt]
+        w_1 \\[3pt]
+        \vdots \\[3pt]
+        w_{N_h-1} \\[3pt]
+        0
+    \end{pmatrix}
+    +
+    \begin{pmatrix}
+        \alpha \\[3pt]
+        0 \\[3pt]
+        \vdots \\[3pt]
+        0 \\[3pt]
+        \beta
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \alpha \\[3pt]
+        w_1 \\[3pt]
+        \vdots \\[3pt]
+        w_{N_h-1} \\[3pt]
+        \beta
+    \end{pmatrix}
+\end{equation}
+
+\subsection{Convergence results of FEM}
+
+As already stated in \eqref{eq:fem_convergence}, the approximated solution $ u_h $ converges to the physical one $ u $ when $ V_h \rightarrow V $, and this happens when $ h \rightarrow 0 $.
+So, it makes sense that the distance between $ u $ and $ u_h $ is related to the mesh size $ h $ ($ \exists k > 0 $ so that):
+\begin{itemize}
+    \item $ \norm{u - u_h}_{H^1} \leq k \ h^1 $
+    \item $ \norm{u - u_h}_{L^2} \leq k \ h^2 $
+    \item $ \underset{x \in (0,L)}{\max} \abs{u(x) - u_h (x)} \leq k \ h^2 $
+\end{itemize}
+
+How do we know the right exponents for $ h $?
+Let us compare two different meshes and evaluate their errors:
+\begin{itemize}
+    \item $ \tau_{h_1} $ mesh with size $ h_1 \Rightarrow E_1 = \norm{u - u_h} \leq k \ h_1^p $
+    \item $ \tau_{h_2} $ mesh with size $ h_2 \Rightarrow E_2 = \norm{u - u_h} \leq k \ h_2^p $
+\end{itemize}
+\begin{equation*}
+    \Rightarrow \frac{E_1}{E_2} \approx \left( \frac{h_1}{h_2} \right)^p \Rightarrow \log{\frac{E_1}{E_2}} \approx p \log{\frac{h_1}{h_2}} \Rightarrow p \approx \frac{\log{\frac{E_1}{E_2}}}{\log{\frac{h_1}{h_2}}}
+    \Rightarrow
+    \begin{cases}
+        p=1 & \text{ for } \norm{\cdot}_{H^1} \\[3pt]
+        p=2 & \text{ for } \norm{\cdot}_{L^2}
+    \end{cases}
+\end{equation*}
+\begin{equation*}
+    \norm{u - u_h}_{L^2} = \int_0^L \left( u - u_h \right)^2 dx \approx \underline{\text{err}}^T [M] \ \underline{\text{err}}, \quad \underline{\text{err}} = u - u_h, \quad [M]_{ij} = \int_0^L \varphi_i \varphi_j \ dx
+\end{equation*}
+\begin{equation*}
+    \norm{u' - u'_h}_{L^2} = \int_0^L \left( u' - u'_h \right)^2 dx \approx \underline{\text{err}}'^T [K] \ \underline{\text{err}}', \quad \underline{\text{err}}' = u' - u'_h, \quad [K]_{ij} = \int_0^L \varphi'_i \varphi'_j \ dx
+\end{equation*}
+
+\subsection{Time-dependent Neumann problem and leap-frog scheme}
+
+We can extend the problem \eqref{eq:strong_form_Neumann} in the time domain by adding its \textbf{time-dependency}:
+\begin{equation}\label{eq:strong_form_Neumann_time}
+    \begin{cases}
+        \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f, \quad x \in (0,L), \ t \in (0,T] \\[3pt]
+        \mu \ \partial_x u (0,t) = g_0 (t) \\[3pt]
+        \mu \ \partial_x u (L,t) = g_1 (t) \\[3pt]
+        u(x,0) = u_0(x) \\[3pt]
+        \partial_t u(x,0) = u_1(x)
+    \end{cases}
+\end{equation}
+
+We multiply each term by the test function $ v(x) $ and integrate along the space domain $ (0,L) $ as we did in \eqref{eq:weak_intro}, obtaining:
+\begin{equation}
+    \int_0^L \rho \ \partial_{tt} u \ v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx - \cancelto{g_1(t)}{\mu (L) \ \partial_x u(L)} \ v(L) + \cancelto{g_0(t)}{\mu (0) \ \partial_x u(0)} \ v(0) = \int_0^L f v \ dx
+\end{equation}
+
+The \textbf{weak formulation} for \eqref{eq:strong_form_Neumann_time} states that $ u(x,t) \in H^1 (0,L) $ is solution $ \forall t \in (0,T] $ of:
+\begin{equation}\label{eq:weak_form_Neumann_time}
+    \int_0^L \rho \ \partial_{tt} u \ v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx = \int_0^L f v \ dx + g_1(t) v(L) - g_0(t) v(0), \quad \forall v \in H^1 (0,L)
+\end{equation}
+
+The weak formulation \eqref{eq:weak_form_Neumann_time} is well posed thanks to the Lax-Milgram lemma \eqref{eq:lemma}, and using bilinear forms \eqref{eq:bilin_form} and linear functionals \eqref{eq:lin_func}, we may express it in the following equivalent form:
+\begin{equation}
+    m \left( \partial_{tt} u,v \right) + a(u,v) = F(v), \quad m \left( \partial_{tt} u,v \right) = \int_0^L \rho \ \partial_{tt} u \ v \ dx
+\end{equation}
+
+Notice that the bilinear form of \eqref{eq:bilin_form} has been actually separated in two terms $ m(\partial_{tt} u,v) $ and $ a(u,v) $.
+
+Regarding the finite element formulation, the approximated solution $ u_h(x,t) $ is function of time too: to extend \eqref{eq:lin_comb} we consider the weights $ u_j(t) $ as function of time.
+\begin{equation}\label{eq:lin_comb_time}
+    u_h (x,t) = \sum_{j=0}^{N_h} u_j(t) \varphi_j (x), \quad \forall t \in (0,T]
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\linewidth]{Neumann_time_evolution.png}
+    \caption{Example of temporal evolution of time-dependent Neumann problems (with discretized space domain)}
+\end{figure}
+
+The \textbf{finite formulation} for \eqref{eq:weak_form_Neumann_time} states that $ u_h (x,t) \in V_h $ is solution $ \forall t \in (0,T] $ of:
+\begin{equation}\label{eq:fe_form_Neumann_time}
+    \begin{cases}
+        m \left( \partial_{tt} u,v \right) + a(u_h,v_h) = F(v_h), \quad \forall v_h \in V_h \\[3pt]
+        u_h (x,0) = u_{0,h} (x) \\[3pt]
+        \partial_t u_h (x,0) = u_{1,h} (x)
+    \end{cases}
+\end{equation}
+
+The functions $ u_{0,h} (x) $ and $ u_{1,h} (x) $ are projection of the original $ u_0 (x) $ and $ u_1 (x) $ onto $ V_h $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{IC_discretization.png}
+    \caption{Continuous initial condition $ u_0 (x) $ and its discretization $ u_{h,0} (x) $}
+\end{figure}
+
+The \textbf{algebraic formulation} is obtained applying \eqref{eq:lin_comb_time} into the first row of \eqref{eq:fe_form_Neumann_time} and choosing $ v_h = \varphi_i $ (same logic of \eqref{eq:alg_form_Neumann}):
+\begin{equation}
+    m \left( \sum_{j=0}^{N_h} \ddot{u}_j (t) \ \varphi_j (x), \varphi_i (x) \right) + a \left( \sum_{j=0}^{N_h} u_j (t) \ \varphi_j (x), \varphi_i (x) \right) = F \left( \varphi_i (x) \right), \quad \forall i = 0, \cdots, N_h
+\end{equation}
+\begin{equation*}
+    \sum_{j=0}^{N_h} \ddot{u}_j (t) \ m \left( \varphi_j, \varphi_i \right) + \sum_{j=0}^{N_h} u_j (t) \ a \left( \varphi_j, \varphi_i \right) = F (\varphi_i)
+\end{equation*}
+\begin{equation*}
+    m_{ij} = m \left( \varphi_j, \varphi_i \right), \quad a_{ij} = a \left( \varphi_j, \varphi_i \right), \quad F_i (t) = \int_0^L f(x,t) \varphi_i \ dx
+\end{equation*}
+
+We can separate time-dependent terms by space-dependent terms by defining the following matrixes and vectors:
+\begin{equation}
+    \underline{u} (t) = 
+    \begin{pmatrix}
+        u_0 (t) \\[3pt]
+        \vdots \\[3pt]
+        u_{N_h} (t)
+    \end{pmatrix}
+    \in \mathbb{R}^{N_h+1} , \quad
+    [M] \leftrightarrow m_{ij}, \quad [A] \leftrightarrow a_{ij}, \quad \underline{b} \leftrightarrow F_i
+\end{equation}
+
+Result, we obtain a system of ordinary differential equations:
+\begin{equation}\label{eq:Neumann_ode}
+    \begin{cases}
+        [M] \ \ddot{\underline{u}} (t) + [A] \ \underline{u} (t) = \underline{b} (t), \quad \forall t \in (0,T] \\[3pt]
+        \underline{u} (0) = \underline{u}_0 \\[3pt]
+        \underline{\dot{u}} (0) = \underline{v}_0
+    \end{cases}
+\end{equation}
+
+The vectors $ \underline{u}_0 $ and $ \underline{v}_0 $ are algebraic representations of $ u_{0,h} $ and $ u_{1,h} $.
+The system is not linear and we still have the time dependency.
+So, as we discretize the space domain defining a mesh, we divide the time interval $ (0,T] $ in $ M $ subintervals of length $\Delta t $ using $ M+1 $ points $ t_i $:
+\begin{equation}
+    t_i = t_0 + i \ \Delta t, \quad \forall i = 0, \cdots, M
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Time_discretization.png}
+    \caption{Time discretization}
+\end{figure}
+
+We now define a method to evaluate the time evolution of the solution $ \underline{u} (t) $ called \textbf{leap-frog scheme}, which has a first step and a general step.
+
+In order to evaluate \eqref{eq:Neumann_ode} at specific time instants, let's consider the following Taylor's expansion:
+\begin{equation}
+    \begin{cases}
+        \underline{u} (t_i + \Delta t) = \underline{u}(t_i) + \Delta t \ \dot{\underline{u}} (t_i) + \frac{\Delta t^2}{2} \ddot{\underline{u}} (t_i) + \theta (\Delta t^3) \\[3pt]
+        \underline{u} (t_i - \Delta t) = \underline{u}(t_i) - \Delta t \ \dot{\underline{u}} (t_i) + \frac{\Delta t^2}{2} \ddot{\underline{u}} (t_i) + \theta (\Delta t^3)
+    \end{cases}
+\end{equation}
+
+By summing the two previous expressions:
+\begin{equation}
+    \underline{u} (t_i + \Delta t) + \underline{u} (t_i - \Delta t) = 2 \underline{u} (t_i) + \Delta t^2 \ \ddot{\underline{u}} (t_i) + \theta (\Delta t^3)
+\end{equation}
+\begin{equation*}
+    \theta (\Delta t^3) \approx 0 \text{ (2nd order approximation) } \Rightarrow
+    \ddot{\underline{u}} (t_i) \approx \frac{\underline{u} (t_i + \Delta t) + \underline{u} (t_i - \Delta t) - 2 \underline{u} (t_i)}{\Delta t^2}
+\end{equation*}
+
+Changing slightly the notation using $ \underline{u}_i = \underline{u} (t_i) $ and $ \underline{b}_i = \underline{b} (t_i) $, the algebraic formulation from \eqref{eq:Neumann_ode} becomes:
+\begin{equation}
+    [M] \ \ddot{\underline{u}}_i + [A] \ \underline{u}_i = \underline{b}_i \Rightarrow [M] \ \frac{\underline{u}_{i+1} + \underline{u}_{i-1} - 2 \underline{u}_i}{\Delta t^2} + [A] \ \underline{u}_i = \underline{b}_i
+\end{equation}
+\begin{equation*}
+    \Rightarrow [M] \ \underline{u}_{i+1} = \Delta t^2 \left( \underline{b}_i - [A] \ \underline{u}_i \right) + 2 [M] \ \underline{u}_i - [M] \ \underline{u}_{i-1}
+\end{equation*}
+
+The last expression is called \textbf{general step}. As a result, we can compute the solution at time $ t_{i+1} $ using the solution at previous time instants $ t_i $ and $ t_{i-1} $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{leap_frog.png}
+    \caption{Leap-frog scheme and general step visualization}
+\end{figure}
+
+The evaluation at time $ t_1 = t_0 + \Delta t $ is slightly different:
+\begin{equation}
+    \underline{u} (t_i + \Delta t) = \underline{u}(t_i) + \Delta t \ \dot{\underline{u}} (t_i) + \frac{\Delta t^2}{2} \ddot{\underline{u}} (t_i) + \theta (\Delta t^3)
+\end{equation}
+\begin{equation*}
+    t_i = t_0 \Rightarrow \underline{u} (t_1) = \underline{u} (t_0) + \Delta t \ \dot{\underline{u}} (t_0) + \frac{\Delta t^2}{2} \ddot{\underline{u}} (t_0) + \theta (\Delta t^3)
+\end{equation*}
+\begin{equation*}
+    \underline{u} (t_0) = \underline{u}_0, \ \dot{\underline{u}}_0 = \underline{v}_0, \ \theta (\Delta t^3) \approx 0 \Rightarrow \ddot{\underline{u}}_0 = \frac{2}{\Delta t^2} \left( \underline{u}_1 - \underline{u}_0 - \Delta t \ \underline{v}_0 \right)
+\end{equation*}
+
+The algebraic formulation from \eqref{eq:Neumann_ode} (only for the first time instant) becomes:
+\begin{equation}
+    [M] \ \ddot{\underline{u}}_0 + [A] \ \underline{u}_0 = \underline{b}_0 \Rightarrow [M] \ \frac{2}{\Delta t^2} \left( \underline{u}_1 - \underline{u}_0 - \Delta t \ \underline{v}_0 \right) + [A] \ \underline{u}_0 = \underline{b}_0
+\end{equation}
+\begin{equation*}
+    [M] \left( \underline{u}_1 - \underline{u}_0 - \Delta t \ \underline{v}_0 \right) = \frac{\Delta t^2}{2} \left( \underline{b}_0 - [A] \ \underline{u}_0 \right)
+\end{equation*}
+\begin{equation*}
+    \Rightarrow [M] \ \underline{u}_1 = \frac{\Delta t^2}{2} \left( \underline{b}_0 - [A] \ \underline{u}_0 \right) + [M] \ \underline{u}_0 + \Delta t \ [M] \ \underline{v}_0
+\end{equation*}
+
+The last expression is called \textbf{first step}.
+
+The leap-frog scheme is 2nd order accurate, meaning that:
+\begin{equation}
+    \abs{u(\tau)-u_h(\tau)} \leq k \ \Delta t^2
+\end{equation}
+
+It is explicit, so the only remaining computation is to invert $ [M] $, and is conditionally stable, which means (mesh size $ h $ and wave speed $ c $):
+\begin{equation}
+    \Delta t \leq K \frac{h}{c}, \quad K \in (0,1), \ c = \sqrt{\frac{\mu}{\rho}}
+\end{equation}
+
+\clearpage

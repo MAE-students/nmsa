@@ -1,0 +1,406 @@
+\section{Lesson 2}\label{sec:les_02}
+
+In this lesson, we introduce the one-dimension problem of \textbf{wave propagation} and define the \textbf{different boundary conditions} in order to introduce the \textbf{weak formulation} concept, necessary to switch to \textbf{numerical methods} (such as finite element method) and compute the solution algebraically.
+
+\subsection{Wave propagation in 1D and boundary conditions}
+
+Let us consider the \textbf{wave propagation problem} in one-dimension (unknown function $ u(x,t) $ with partial derivatives $ \partial_x u $ and $ \partial_t u $):
+\begin{equation}\label{eq:wave_1D}
+    \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f, \quad x \in (0,L), t \in (0,T) 
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{wave_1D.png}
+    \caption{Wave propagation in one-dimension, solution $ u(x,t) $ at two different time instants}
+    
+\end{figure}
+
+Where $ \rho (x) \geq \rho_0 > 0 $ is the mass density [kg/m$^3$], $ \mu (x) \geq \mu_0 > 0 $ is the horizontal tension [N] and $ c(x) = \sqrt{\dfrac{\mu}{\rho}} $ is the wave speed [m/s].
+The previous \eqref{eq:wave_1D} is equivalent to:
+\begin{equation}
+    \partial_{tt} u - c^2 \partial_{xx} u = \frac{f}{\rho}
+\end{equation}
+
+To complete the problem description and obtain the exact solution, we need \textbf{initial conditions} \eqref{eq:ic} and \textbf{boundary conditions}:
+\begin{equation}\label{eq:ic}
+   u(x,0) = u_0 (x), \quad \partial_t u (x,0) = u_1 (x)
+\end{equation}
+
+Different boundary conditions exist.
+Fixed conditions (\textbf{Dirichlet}, \eqref{eq:Dirichlet}):
+\begin{equation}\label{eq:Dirichlet}
+    u(0,t) = g_1(t), \quad u(L,t) = g_2(t)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Dirichlet_1D.png}
+    \caption{Dirichlet conditions for $ g_1(t) = g_2(t) =  0$ (a) or otherwise (b)}
+\end{figure}
+
+Free conditions (\textbf{Neumann, \eqref{eq:Neumann}}):
+\begin{equation}\label{eq:Neumann}
+    \mu \ \partial_x u (0,t) = g_3(t), \quad \mu \ \partial_x u (L,t) = g_4(t)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Neumann_1D.png}
+    \caption{Neumann conditions and derivative at boundaries}
+\end{figure}
+
+\textbf{Periodic} conditions (i.e. to model wave propagation in an infinite string, \eqref{eq:periodic}):
+\begin{equation}\label{eq:periodic}
+    u(0,t) = u(L,t)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Periodic_1D.png}
+    \caption{Example of periodic conditions}
+\end{figure}
+
+And \textbf{impedance} conditions \eqref{eq:impedance}:
+\begin{equation}\label{eq:impedance}
+    \frac{1}{c} \ \partial_t u(0,t) - \alpha \ \partial_x u(0,t) = 0, \quad \frac{1}{c} \ \partial_t u(L,t) + \alpha \ \partial_x u(L,t) = 0
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Impedance_1D.png}
+    \caption{Impedance condition with reflected (red) and transmitted wave (green)}
+\end{figure}
+
+For $ \alpha = 1 $ we talk about \textbf{absorption} (transparent conditions), while for $ 0 < \alpha < 1 $ we talk about \textbf{reflection}.
+
+\subsection{Wave propagation in 2D and 3D}
+
+The \textbf{wave propagation problem} easily extends to more than one-dimension (unknown function $ u(\underline{x}, t) $ defined in the space dimension $ \Omega $):
+\begin{equation}\label{wave_2D}
+    \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f, \quad \underline{x} \in \Omega, t \in (0,T)    
+\end{equation}
+
+And so do the \textbf{initial conditions}:
+\begin{equation}\label{eq:ic_2D}
+   u(\underline{x},0) = u_0 (\underline{x}), \quad \partial_t u (\underline{x},0) = u_1 (\underline{x})
+\end{equation}
+
+And so do the \textbf{boundary conditions} (fixed \eqref{eq:Dirichlet_2D}, free \eqref{eq:Neumann_2D} and impedance \eqref{eq:impedance_2D}):
+\begin{equation}\label{eq:Dirichlet_2D}
+    u(\underline{x},t) = 0, \quad \underline{x} \in \Gamma_D
+\end{equation}
+\begin{equation}\label{eq:Neumann_2D}
+    \mu \ \nabla u \cdot \underline{n} = 0, \quad \underline{x} \in \Gamma_N
+\end{equation}
+\begin{equation}\label{eq:impedance_2D}
+    \frac{1}{c} \ \partial_t u - \alpha \ \nabla u \cdot \underline{n} = 0, \quad \underline{x} \in \Gamma_I
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{surface_dimension.png}
+    \caption{Wave propagation in 2D, boundary domain $ \Gamma $}
+\end{figure}
+
+\subsection{Strong and weak formulation}
+
+To understand how the \textbf{finite element method} works, let us consider the following wave propagation problem (time-independent with Neumann conditions \eqref{eq:Neumann}) in form of \textbf{strong formulation}:
+\begin{equation}\label{eq:strong_form_Neumann}
+    \begin{cases}
+        \rho u - \partial_x \left( \mu \ \partial_x u \right) = f, \quad x \in (0,L) \\[3pt]
+        \mu \ \partial_x u (0) = \mu \ \partial_x u (L) = 0
+    \end{cases}
+\end{equation}
+
+The question is: in which mathematical space we may look for $ u(x) $?
+Starting by considering $ f(x) $ as a generic continuous function $ f \in C^0 (0,L) $, it is necessary for the solution $ u $ to be twice derivable so that $ \partial_{xx} u $ exists.
+This results in $ u \in C^2 (0,L) $, though it is possible to find solutions $ u \notin C^2 (0,L) $: by deriving, the derivative $ u'(x) $ loses regularity, and that is not desirable.
+
+The idea, then, is to use integration instead of derivation: we introduce the \textbf{weak formulation}.
+It is easily obtained by multiplying all terms of the problem by a \textbf{test function} $ v \in C^1 (0,L) $ and by integrating all the new terms along the space domain:
+\begin{equation}\label{eq:weak_intro}
+    \int_0^L \rho u v \ dx - \int_0^L \partial_x \left( \mu \ \partial_x u \right) v \ dx = \int_0^L f v \ dx
+\end{equation}
+
+Applying integration by parts on the second integral ($ f' = \partial_x \left( \mu \ \partial_x u \right) $, $ g = v $):
+\begin{equation}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx - \left[ \mu \ \partial_x u \ v \right]_0^L = \int_0^L f v \ dx
+\end{equation}
+\begin{equation*}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx - \cancel{\mu (L) \ \partial_x u(L) \ v(L)} + \cancel{\mu (0) \ \partial_x u(0) \ v(0)} = \int_0^L f v \ dx
+\end{equation*}
+
+According to the boundary conditions \eqref{eq:strong_form_Neumann}, both 3rd and 4th terms are equal to zero.
+
+Result, we want to find $ u \in C^1 (0,L) $ so that:
+\begin{equation}\label{eq:weak_simple}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx = \int_0^L f v \ dx, \quad \forall v \in C^1 (0,L)
+\end{equation}
+
+Considering that we want all three integrals to be finite, what is the correct space for both $ u $ and $ v $?
+We remind the existence of \textbf{Lebesque spaces} (squared integrable functions):
+\begin{equation}\label{eq:Lebesque}
+    L^2 (0,L) =
+    \left\{
+        v : (0,L) \rightarrow \mathbb{R} \text{ so that } \int_0^L v^2 \ dx < +\infty
+    \right\}
+\end{equation}
+
+With scalar product $ (\cdot,\cdot) $ and norm $ \norm{\cdot} $ defined as:
+\begin{equation}
+    (f,g) = \int_0^L fg \ dx
+\end{equation}
+\begin{equation}
+    (f,f) = \int_0^L f^2 \ dx \Rightarrow \norm{f}_{L^2} = \sqrt{(f,f)} = \sqrt{\int_0^L f^2 \ dx}
+\end{equation}
+
+The distance between two vectors $ \underline{v} $ and $ \underline{w} $ in $ \mathbb{R}^n $ is given by the difference norm in said space:
+\begin{equation}
+    d(\underline{v}, \underline{w}) = \norm{\underline{v} - \underline{w}}_{\mathbb{R}^n} = \sqrt{\sum_{i=1}^n \left( v_i - w_i \right)^2}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Distance_Rn.png}
+    \caption{Vectors and their distance in $ \mathbb{R}^n $}
+\end{figure}
+
+Similarly, the distance between two functions $ f(x) $ and $ g(x) $ is:
+\begin{equation}
+    d(f,g) = \norm{f - g}_{L^2} = \sqrt{\int_0^L (f-g)^2 \ dx}
+\end{equation}
+
+In addition to that, we remind the \textbf{Cauchy-Schwarz inequality}:
+\begin{equation}\label{eq:Cauchy_Schwarz}
+    f,g \in L^2 (0,L) \Rightarrow \int_0^L \abs{fg} \ dx \leq \norm{f}_{L^2} \ \norm{g}_{L^2}
+\end{equation}
+
+By applying the inequality \eqref{eq:Cauchy_Schwarz} in the first weak formulation \eqref{eq:weak_simple}, we want the functions $ u, v, \partial_x u, \partial v \in L^2 (0,L) $.
+
+The mathematical spaces that admit these new conditions are the \textbf{Hilbert spaces}:
+\begin{equation}\label{eq:Hilbert}
+    H^1 (0,L) =
+    \left\{
+        v : (0,L) \rightarrow \mathbb{R} \text{ so that } v, \partial_x v \in L^2 (0,L)
+    \right\}
+\end{equation}
+
+Notice that $ H^0 (0,L) = L^2 (0,L) $ and, in one-dimension, $ H^1 (0,L) = C^0 (0,L) $.
+
+The Hilbert norm is defined as:
+\begin{equation}
+    \norm{v}_{H^1} = \sqrt{\norm{v}_{L^2}^2 + \norm{\partial_x v}_{L^2}^2}
+\end{equation}
+
+Finally, the weak formulation of \eqref{eq:strong_form_Neumann} states that the function $ u \in H^1 (0,L) $ is solution of:
+\begin{equation}\label{eq:weak_form_Neumann}
+    \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx = \int_0^L f v \ dx, \quad \forall v \in H^1 (0,L)
+\end{equation}
+
+\subsection{Lax-Milgram lemma}
+
+We define the weak formulation integrals in forms of \textbf{bilinear form} $ a(\cdot, \cdot) $:
+\begin{equation}\label{eq:bilin_form}
+    a(u,v) =  \int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx, \quad a : H^1 (0,L) \times H^1 (0,L) \rightarrow \mathbb{R}
+\end{equation}
+\begin{equation*}
+    a(\alpha u + \beta w, v) = \alpha \ a(u,v) + \beta \ a(w,v), \quad \forall \alpha, \beta \in \mathbb{R}
+\end{equation*}
+
+And \textbf{linear functional} $ F(\cdot) $:
+\begin{equation}\label{eq:lin_func}
+    F(v) =  \int_0^L fv \ dx, \quad F : H^1 (0,L) \rightarrow \mathbb{R}
+\end{equation}
+\begin{equation*}
+    F(\alpha v) = \alpha \ F(v), \quad \forall \alpha \in \mathbb{R}
+\end{equation*}
+
+The equivalent form of \eqref{eq:weak_form_Neumann} becomes:
+\begin{equation}\label{eq:weak_lemma}
+    a(u,v) = F(v), \quad \forall v \in H^1 (0,L)
+\end{equation}
+
+The \textbf{Lax-Milgram lemma} states that, having a Hilbert space $ V $ (i.e. $ V = H^1 (0,L) $), a bilinear form $ a: V \times V \rightarrow \mathbb{R} $ and a linear functional $ F: V \rightarrow \mathbb{R} $ where:
+\begin{itemize}
+    \item $ a $ is \textbf{coercive}: $ \exists \ \alpha > 0, a(u,u) \geq \alpha \ \norm{u}_V^2 $
+    \item $ a $ is \textbf{continuous}: $ \exists \ M > 0, \abs{a(u,v)} \leq M \ \norm{u}_V \ \norm{v}_V $
+    \item $ F $ is \textbf{continuous}: $ \exists \ C > 0, \abs{F(v)} \leq C \ \norm{v}_V $
+\end{itemize}
+\begin{equation}\label{eq:lemma}
+    \Rightarrow \exists! u \in V \text{ solution to \eqref{eq:weak_lemma} and } \norm{u}_V \leq \frac{1}{\alpha} \sup_{v \neq 0} \abs{F(v)} 
+\end{equation}
+
+The demonstrations are given:
+\begin{proof}
+    \begin{equation*}
+        a(u,u) = \int_0^L \rho u^2 \ dx + \int_0^L \mu \left( \partial_x u \right)^2 \ dx, \quad \rho(x) \geq \rho_0 > 0, \ \mu(x) \geq \mu_0 > 0
+    \end{equation*}
+    \begin{equation*}
+        a(u,u) \geq \rho_0 \int_0^L u^2 \ dx + \mu_0 \int_0^L \left( \partial_x u \right)^2 \ dx = \rho_0 \ \norm{u}_{L^2}^2 + \mu_0 \ \norm{\partial_x u}_{L^2}^2 \geq \min{\left( \rho_0,\mu_0 \right)} \left( \norm{u}_{L^2}^2 + \norm{\partial_x u}_{L^2}^2 \right)
+    \end{equation*}
+    \begin{equation*}
+        \alpha = \min{\left( \rho_0,\mu_0 \right)}, \ \norm{u}_{H^1}^2 = \norm{u}_{L^2}^2 + \norm{\partial_x u}_{L^2}^2 \Rightarrow a(u,u) \geq \alpha \norm{u}_{H^1}^2
+    \end{equation*}
+\end{proof}
+
+\begin{proof}
+    \begin{equation*}
+       \abs{a(u,v)} = \abs{\int_0^L \rho u v \ dx + \int_0^L \mu \ \partial_x u \ \partial_x v \ dx} \leq \int_0^L \abs{\rho u v} \ dx + \int_0^L \abs{\mu \ \partial_x u \ \partial_x v} \ dx
+    \end{equation*}
+    \begin{equation*}
+        \rho(x) \leq \rho_1, \ \mu(x) \leq \mu_1 \Rightarrow \abs{a(u,v)} \leq \rho_1 \int_0^L \abs{u v} \ dx + \mu_1 \int_0^L \abs{\partial_x u \ \partial_x v} \ dx
+    \end{equation*}
+    \begin{equation*}
+        \text{Chauchy-Schwarz inequality} \Rightarrow \abs{a(u,v)} \leq \rho_1 \ \norm{u}_{L^2} \ \norm{v}_{L^2} + \mu_1 \ \norm{\partial_x u}_{L^2} \ \norm{\partial_x v}_{L^2}
+    \end{equation*}
+    \begin{equation*}
+        \norm{\cdot}_{L^2} \leq \norm{\cdot}_{H^1} \Rightarrow \abs{a(u,v)} \leq \left( \rho_1 + \mu_1 \right) \norm{u}_{H^1} \norm{v}_{H^1} = M \ \norm{u}_{H^1} \norm{v}_{H^1}
+    \end{equation*}
+\end{proof}
+
+\begin{proof}
+    \begin{equation*}
+        \abs{F(v)} = \abs{\int_0^L fv \ dx} \leq \int_0^L \abs{fv} \ dx \leq \norm{f}_{L^2} \norm{v}_{L^2} \leq \norm{f}_{L^2} \norm{v}_{H^1} = C \ \norm{v}_{H^1}
+    \end{equation*}
+\end{proof}
+
+\subsection{Finite Element Method}
+
+The last problem to solve is that the Hilbert space $ V $ has infinite solutions to choose from, related to the fact that a continuous problem has a continuous solution with infinite points to determine.
+So, the idea is to formulate the weak formulation \eqref{eq:weak_lemma} using a limited subspace $ V_h \subset V $ so that $ \dim{V_h} = N_h < +\infty $.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\linewidth]{fem.png}
+    \caption{Subspace $ V_h \subset V $}
+\end{figure}
+
+In practice, $ h $ describes the space discretization (\textbf{mesh}), so that:
+\begin{equation}\label{eq:fe_subspace}
+    \lim_{h \rightarrow 0} V_h = \lim_{N_h \rightarrow +\infty} V_h = V
+\end{equation}
+
+Which means that using a dense mesh (infinitesimal dimension $ h $ and infinite grid point $ N_h $), it is possible to converge towards the original space.
+
+The \textbf{finite element formulation} states that the function $ u_h \in V_h $ is solution of:
+\begin{equation}\label{eq:fe_form_Neumann}
+    a(u_h,v_h) = F(v_h), \quad \forall v_h \in V_h
+\end{equation}
+
+The Lax-Milgram lemma stands, so the solution $ u_h $ is unique.
+The computation of said solution starts by considering the $ N_h $ basis functions $ \varphi_j (x) $ of $ V_h $, and the solution $ u_h (x) $ as linear combination of said functions:
+\begin{equation}\label{eq:Vh_basis}
+    \left\{ \varphi_j \right\}_{j=1}^{N_h}
+    \Rightarrow
+    u_h (x) = \sum_{j=1}^{N_h} u_j \ \varphi_j (x), \quad \forall u_h \in V_h
+\end{equation}
+
+By applying \eqref{eq:Vh_basis} into \eqref{eq:fe_form_Neumann} and choosing $ v_h $ as one of the basis function:
+\begin{equation}
+    a \left( \sum_{j=1}^{N_h} u_j \ \varphi_j (x), v_h \right) = F(v_h), \quad \forall v_h \in V_h
+\end{equation}
+\begin{equation*}
+    v_h = \varphi_i \Rightarrow a \left( \sum_{j=1}^{N_h} u_j \ \varphi_j (x), \varphi_i \right) = F(\varphi_i), \quad \forall i = 1,2,\cdots,N_h
+\end{equation*}
+\begin{equation*}
+    \Leftrightarrow \sum_{j=1}^{N_h} u_j \ a(\varphi_j, \varphi_i) = F (\varphi_i), \quad \forall i = 1,2,\cdots,N_h
+\end{equation*}
+\begin{equation*}
+    a_{ij} = a(\varphi_j, \varphi_i), \ b_i = F (\varphi_i) \Rightarrow \sum_{j=1}^{N_h} u_j \ a_{ij} = b_i, \quad \forall i = 1,2,\cdots,N_h
+\end{equation*}
+
+In the end, we obtain a linear system (\textbf{algebraic formulation}):
+\begin{equation}\label{eq:alg_form_Neumann}
+    \begin{cases}
+        a_{1,1} \ u_1 + \cdots + a_{1, N_h} \ u_{N_h} = b_1 \\[3pt]
+        \cdots \\[3pt]
+        a_{N_h, 1} \ u_1 + \cdots + a_{N_h, N_h} \ u_{N_h} = b_{N_h}
+    \end{cases}
+    \Leftrightarrow [A] \underline{u} = \underline{b}
+\end{equation}
+
+Where we define:
+\begin{equation}
+    [A]_{ij} = a_{ij} \in \mathbb{R}^{N_h \times N_h}, \quad \underline{u} \in \mathbb{R}^{N_h}, \quad \underline{b} \in \mathbb{R}^{N_h}
+\end{equation}
+
+The solution exists and may be computed whenever:
+\begin{equation}
+    \underline{u} = [A]^{-1} \underline{b} \Leftrightarrow \det{A} \neq 0 \text{ ($A$ non-singular)}
+\end{equation}
+
+The bilinear form $ a $ is coercive \eqref{eq:lemma}, so the matrix $ [A] $ is \textbf{positive definite}:
+\begin{equation}
+    \underline{x}^T [A] \underline{x} \geq 0, \quad \forall \underline{x} \in \mathbb{R}^n
+\end{equation}
+\begin{equation*}
+    \underline{x}^T [A] \underline{x} = 0 \Leftrightarrow \underline{x} = \underline{0}
+\end{equation*}
+
+Which concludes that $ [A] $ is non-singular.
+The demonstration is given:
+\begin{proof}
+    \begin{equation*}
+        v_h \in V_h \longleftrightarrow \underline{v}_h = \left( v_1, \cdots, v_{N_h} \right) \in \mathbb{R}^{N_h}, \quad v_h(x) = \sum_{j=1}^{N_h} v_j \ \varphi_j(x)
+    \end{equation*}
+    \begin{equation*}
+        \underline{v}^T [A] \underline{v} = \sum_{i,j=1}^{N_h} v_i \ A_{ij} \ v_j = \sum_{i,j=1}^{N_h} v_i \ a(v_i,v_j) \ v_j = a \left( \sum_{i=1}^{N_h} v_i \varphi_i, \sum_{j=1}^{N_h} v_j \varphi_j \right) = a(v_h, v_h)
+    \end{equation*}
+    \begin{equation*}
+        \text{$a(\cdot,\cdot)$ coercive} \Rightarrow \underline{v}^T [A] \underline{v} = a(v_h,v_h) \geq \alpha \norm{v_h}_{H^1}^2 \geq 0
+    \end{equation*}
+\end{proof}
+
+\subsection{Errors in the approximation}
+
+An approximation occurs when selecting the subspace $ V_h \subset V $ \eqref{eq:fe_subspace} for the finite element formulation.
+On the other hand, the switch between finite element and algebraic formulations is errorless.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\linewidth]{comp_error.png}
+    \caption{Relation between the three main areas of numerical modelling and relative approximations}
+\end{figure}
+
+How much is the computational error we make from finding $ u_h $ instead of $ u $?
+Let us consider the difference between weak formulation (with test function $ v_h \in V_h \subset V $) and finite element formulation:
+\begin{equation}
+    \begin{cases}
+        a(u, v_h) = F(v_h) \\[3pt]
+        a(u_h, v_h) = F(v_h)
+    \end{cases}
+    \Rightarrow a(u-u_h, v_h) = 0, \quad \forall v_h \in V_h
+\end{equation}
+
+The previous result is the \textbf{Céa lemma}.
+Let us now evaluate the distance (difference norm) between $ u $ and $ u_h $:
+\begin{equation}
+    \alpha \ \norm{u-u_h}_V^2 \underset{\text{coercivity}}{\leq} a(u-u_h, u-u_h) = a(u-u_h, u-u_h \pm v_h) =
+\end{equation}
+\begin{equation*}
+    = a(u-u_h, u-v_h) + \underset{v_h-u_h \in V_h}{\cancel{a(u-u_h, v_h-u_h)}} = a(u-u_h, u-v_h) \leq M \ \norm{u-u_h}_V \ \norm{u-v_h}_V
+\end{equation*}
+\begin{equation*}
+    \Rightarrow \norm{u-u_h}_V \leq \frac{M}{\alpha} \norm{u-v_h}_V, \quad \forall v_h \in V_h
+\end{equation*}
+
+The last result states that the considered solution $ u_h $ is the best approximation we may obtain in $ V_h $.
+The finite element method converges to the continuous problem as dense its discretization gets:
+\begin{equation}\label{eq:fem_convergence}
+    \lim_{h \rightarrow 0} \norm{u-u_h}_V \leq \frac{M}{\alpha} \lim_{h \rightarrow 0} \underset{V_h \rightarrow V}{\cancelto{0}{\norm{u-v_h}_V}}
+\end{equation}
+\begin{equation*}
+    \Rightarrow \norm{u-u_h} \rightarrow 0, \text{ for } h \rightarrow 0
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{approximation.png}
+    \caption{Space $ V $ (black) and its subset $ V_h $ (blue), distance from the continuous solution (red)}
+\end{figure}
+
+The role of $ h $, as anticipated before, is to describe how dense is the mesh, defining the space discretization grid.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{mesh_1D.png}
+    \caption{Space discretization in 1D}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{mesh_2D.png}
+    \includegraphics[width=0.2\linewidth]{mesh_3D.png}
+    \caption{Space discretization in 2D and 3D}
+\end{figure}
+
+\clearpage

@@ -1,0 +1,238 @@
+\section{Lesson 11}\label{sec:les_11}
+
+In this lesson, we extend the hyperbolic equations and define the Burger's equation, introduce the discontinuity problem, the weak solutions and the discontinuity propagation concept.
+
+\subsection{Scalar non-linear hyperbolic equations}
+
+We want to extend hyperbolic equations, considering the following form:
+\begin{equation}\label{eq:non_lin_hyper}
+    \partial_t u + \partial_x F(u) = 0, \quad x \in \mathbb{R}, \quad t>0
+\end{equation}
+
+Where $F(u)$ is a generic non-linear function called \textbf{flux}.
+In a bounded domain $ x \in (a,b) $ we have:
+\begin{equation}
+    \int_a^b \partial_t u \ dx + F(u(b)) - F(u(a)) = \partial_t \left( \int_a^b u \ dx \right) + F(u(b)) - F(u(a)) = 0
+\end{equation}
+
+The transport equation, as in \eqref{eq:transport}, has $F(u) = au$.
+Another equation is the \textbf{Burger's equation}, which has $F(u) = \dfrac{u^2}{2}$.
+
+Non-linear hyperbolic equations have two equivalent forms, conservative and non-conservative:
+\begin{equation}
+    \partial_t u + \partial_x F(u) = 0, \quad \partial_t u + \partial_u F \ \partial_x u = 0
+\end{equation}
+
+For the Burger's equation:
+\begin{equation}\label{eq:Burger}
+    \partial_t u + \partial_x \left( \frac{u^2}{2} \right) = 0, \quad \partial_t u + u \ \partial_x u = 0
+\end{equation}
+
+The non-conservative form looks like a transport equation with velocity $u$.
+In addition to that, we can say that the Burger's equation is a simplified Navier-Stokes equation (fluid velocity $u$, pressure $p$):
+\begin{equation}
+    \rho \left( \partial_t u + \underline{u} \nabla \underline{u} \right) = - \nabla p + \mu \Delta \underline{u} + f
+\end{equation}
+
+We consider specific scenarios:
+\begin{itemize}
+    \item $\mu = 0$, $f=0$, $p$ constant: \textbf{unviscid Burger's equation}
+    $$
+    \partial_t u + \underline{u} \nabla \underline{u} = 0, \quad F(u) = \frac{u^2}{2}
+    $$
+    \item $\mu \neq 0$, $f=0$, $p$ constant: \textbf{viscid Burger's equation}
+    $$
+    \partial_t u + \underline{u} \nabla \underline{u} = \mu \Delta \underline{u}, \quad F(u) = \frac{u^2}{2} - \frac{\mu}{\rho} \nabla u
+    $$
+\end{itemize}
+
+\subsection{Burger's equation}
+
+Let's consider the non-conservative form of the Burger's equation.
+We can compute the \textbf{characteristic lines}, where the solution is constant:
+\begin{equation}
+    \partial_x x(t) = u, \quad x(0) = u_0(x)
+\end{equation}
+
+The characteristic lines have different orientation based on the sign of $u_0(x)$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Burger_transport.png}
+    \caption{Comparison between Burger (blue) and transport equation (red, $u_0=a$)}
+\end{figure}
+
+Whenever $u_0(x)$ is an increasing function, the characteristic lines do not overlap and the solution exists and is unique.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Char_lines.png}
+    \caption{Characteristic lines with slope $t=\dfrac{1}{u_0(x)}x$}
+\end{figure}
+
+\subsection{Weak solutions}
+
+We want to analyse what happens for $u_0(x)$ as a non-increasing function.
+Let's take as an example $u_0(x) = \dfrac{1}{1+x^2}$:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Bell_u0.png}
+    \caption{Non-increasing examples of $u_0(x)$}
+\end{figure}
+
+In a case like that, the classical solutions exist up to a \textbf{critical time} $t \leq t_c$, where:
+\begin{equation}\label{eq_critical_time}
+    t_c = - \frac{1}{\inf_{x} \partial_x u_0(x) \ \partial_{uu} F(u_0(x))}
+\end{equation}
+
+In the scenario of interest:
+\begin{equation}
+    F(u) = \frac{u^2}{2}, \quad \partial_u F(u) = u, \quad \partial_{uu} F(u) = 1 \Rightarrow \partial_{uu} F(u_0(x)) = 1
+\end{equation}
+\begin{equation*}
+    u_0(x) = \frac{1}{1+x^2}, \quad \partial_x u_0(x) = \frac{-2x}{(1+x^2)^2}
+\end{equation*}
+\begin{equation*}
+    \partial_{xx} u_0(x) = \frac{-2 (1+x^2)^2 +2x \ 2 (1+x^2) \ 2x}{(1+x^2)^4} = \frac{-2-2x^2+8x^2}{(1+x^2)^3}
+\end{equation*}
+\begin{equation*}
+    \text{minimum:} \quad \partial_{xx} u_0(x) = 0 \Leftrightarrow 6 x^2 - 2 = 0 \Leftrightarrow x = \pm \sqrt{\frac{1}{3}}
+\end{equation*}
+\begin{equation*}
+    \partial_{xx} u_0(x) > 0 \Leftrightarrow x < - \frac{1}{\sqrt{3}}, \quad x > \frac{1}{\sqrt{3}}
+\end{equation*}
+\begin{equation*}
+    \inf_{x} \partial_x u_0(x) = \partial_x u_0(\frac{1}{\sqrt{3}}) = \frac{-2 \frac{1}{\sqrt{3}}}{(1 + \frac{1}{3})^2} = \frac{-\frac{2}{\sqrt{3}}}{\frac{16}{9}} = - \frac{3 \sqrt{3}}{8} \Rightarrow t_c = - \frac{1}{- \frac{3 \sqrt{3}}{8} \ 1} = \frac{8}{3 \sqrt{3}}
+\end{equation*}
+
+What happens is that, after some time $t_c$, a discontinuity arises.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Critical_time.png}
+    \caption{Discontinuity of the solution after time $t_c$}
+\end{figure}
+
+This is why we need to talk about \textbf{weak solutions} to the Burger's equation (or other non-linear equations), so that:
+\begin{equation}
+    \sigma = \frac{[F]}{[u]} = \frac{F(u_R) - F(u_L)}{u_R - u_L}, \quad F(u_R) - F(u_L) = \sigma (u_R - u_L)
+\end{equation}
+
+Where $ \sigma $ is the \textbf{speed of propagation of the discontinuity} and $u_L$ and $u_R$ are the left and right sides of the discontinuity.
+Notice that weak solutions are not unique, and we may choose \textbf{entropic solutions} as good solutions, which satisfy the previous condition.
+Let's consider a simple discontinuity:
+\begin{equation}
+    F(u) = \frac{u^2}{2}, \quad u_0(x) =
+    \begin{cases}
+        u_L, \quad x \leq 0 \\[3pt]
+        u_R, \quad x > 0
+    \end{cases}
+    , \quad u_L \neq u_R, \quad u_L, u_R > 0
+\end{equation}
+
+Let's consider the first case in which $ u_L > u_R $ (\textbf{shock wave}): the characteristic lines enter into the discontinuity and $ \exists ! u(x,t) $ solution.
+\begin{equation}
+    \sigma = \frac{\frac{u_R^2}{2} - \frac{u_L^2}{2}}{u_R - u_L} = \frac{1}{2} (u_R + u_L), \quad u(x,t) =
+    \begin{cases}
+        u_L, \quad x \leq \sigma t \\[3pt]
+        u_R, \quad x > \sigma t
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Discontinuity_1.png}
+    \caption{Discontinuity $ u_L > u_R $}
+\end{figure}
+
+In the second case $ u_L < u_R $ (\textbf{rarefaction wave}), the characteristic lines exit from the discontinuity and $ \exists \infty $ solutions: only one solution is stable.
+\begin{equation}\label{eq:rarefaction}
+    \sigma = \frac{1}{2} (u_L + u_R), \quad u(x,t) =
+    \begin{cases}
+        u_L, & x < u_L t \\[3pt]
+        \dfrac{x}{t}, & u_L t \leq x \leq u_R t \\[3pt]
+        u_R, & x > u_R t
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Discontinuity_2.png}
+    \includegraphics[width=0.4\linewidth]{Solution_discontinuity.png}
+    \caption{Discontinuity $ u_L < u_R $ (left), unique stable solution (right)}
+\end{figure}
+
+We can use different finite difference schemes for conservative (C) and non-conservative (NC) forms:
+\begin{itemize}
+    \item upwind:
+    $$
+    \text{(C): }
+    \begin{cases}
+        u_j^{k+1} = u_j^k + \dfrac{\Delta t}{h} \left( \frac{(u_j^k)^2}{2} - \frac{u_{j-1}^k}{2} \right), & u_j^k > 0 \\[3pt]
+        u_j^{k+1} = u_j^k + \dfrac{\Delta t}{h} \left( \frac{(u_{j+1}^k)^2}{2} - \frac{u_j^k}{2} \right), & u_j^k < 0
+    \end{cases}
+    $$
+
+    $$
+    \text{(NC): }
+    \begin{cases}
+        u_j^{k+1} = u_j^k + \dfrac{\Delta t}{h} u_j^k \left( u_j^k - u_{j-1}^k \right), & u_j^k > 0 \\[3pt]
+        u_j^{k+1} = u_j^k + \dfrac{\Delta t}{h} u_j^k \left( u_{j+1}^k - u_j^k \right), & u_j^k < 0
+    \end{cases}
+    $$
+
+    \item Lax-Wendroff (NC)
+    $$
+    \partial_t u + u \ \partial_x u = 0 \Rightarrow \partial_t u = - u \ \partial_x u
+    $$
+    $$
+    \partial_{tt} u + \partial_t u \ \partial_x u + u \ \partial_{tx} u = 0 \Rightarrow \partial_{tt} u = - \partial_t u \ \partial_x u - u \ \partial_{tx} u = u (\partial_x u)^2 - u \ \partial_{tx} u
+    $$
+    $$
+    \partial_{tx} u = \partial_x (\partial_t u) \Rightarrow \partial_{tt} u = u (\partial_x u)^2 - u \partial_x (- u \ \partial_x u) = u (\partial_x u)^2 + u \ \partial_x u \ \partial_x u + u^2 \partial_{xx} u = 2u (\partial_x u)^2 + u^2 \partial_{xx} u
+    $$
+    $$
+    \text{Taylor expansion: } \partial_t u + u \ \partial_x u = \frac{\Delta t}{2} \partial_{tt} u + \cdots = \frac{\Delta t}{2} \left( 2u (\partial_x u)^2 + u^2 \partial_{xx} u \right)
+    $$
+    $$
+    \partial_t u = \frac{u_j^{k+1} - u_j^k}{\Delta t}, \quad \partial_x u = \frac{u_{j+1}^k - u_j^k}{h}, \quad \partial_{xx} u = \frac{u_{j+1}^k - 2 u_j^k + u_{j-1}^k}{h^2}
+    $$
+    $$
+    \Rightarrow u_j^{k+1} = u_j^k - \Delta t \ u_j^k \left( \frac{u_{j+1}^k - u_j^k}{2h} \right) + \frac{\Delta t^2}{2} \left[ 2 u_j^k \left( \frac{u_{j+1}^k - u_j^k}{h} \right)^2 + \left(u_j^k\right)^2 \frac{u_{j+1}^k - 2 u_j^k + u_{j-1}^k}{h^2} \right]
+    $$    
+\end{itemize}
+
+Let's focus on \textbf{conservative numerical schemes} for \eqref{eq:non_lin_hyper}, they are all based upon the following integral form:
+\begin{equation}
+    u_j^{k+1} = u_j^k - \frac{\Delta t}{h} \left( H_{j-\frac{1}{2}}^k - H_{j+\frac{1}{2}}^k \right)
+\end{equation}
+
+The numerical flux is computed using $ 2p+1 $ points:
+\begin{equation}
+    H_{j+\frac{1}{2}}^k = H \left( u_j^k, u_{j-1}^k, \cdots, u_{j-p}^k, u_{j+1}^k, \cdots, u_{j+p}^k \right)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{H_computation.png}
+    \caption{Numerical flux $H$ computation}
+\end{figure}
+
+The simplest case $p=1$:
+\begin{equation}
+    H_{j+\frac{1}{2}}^k = H \left( u_j^k, u_{j-1}^k, u_{j+1}^k \right) = \frac{1}{\Delta t} \int_{t_k}^{t_{k+1}} F(u(x_{j+\frac{1}{2}})) \ dt
+\end{equation}
+
+By discretizing the last expression, we get on a discrete level and the discretization method determines different numerical schemes.
+For example:
+\begin{itemize}
+    \item Lax-Friedrichs
+    $$
+    \text{(NC): } u_j^{k+1} = \frac{u_{j+1}^k - u_j^k}{2} - \frac{\Delta t}{2h} \left( F(u_{j+1}^k) - F(u_{j-1}^k) \right)
+    $$
+    $$
+    F(u) = au \text{ transport equation } \Rightarrow u_j^{k+1} = \frac{1}{2} \left( u_{j+1}^k - u_{j-1}^k \right) - \frac{\lambda}{2} a \left( u_{j+1}^k - u_{j-1}^k \right)
+    $$
+    $$
+    \text{(C): } u_j^{k+1} = u_j^k - \frac{\Delta t}{h} \left( F(u_{j+1}^k, u_j^k) - F(u_j^k, u_{j-1}^k) \right) = u_j^k - \frac{\Delta t}{h} \left( H_{j+\frac{1}{2}}^k - H_{j-\frac{1}{2}}^k \right)
+    $$
+    $$
+    F(u_{j+1}^k, u_j^k) = \frac{h}{2 \Delta t} \left( u_j^k - u_{j+1}^k \right) + \frac{1}{2} \left[ F(u_j^k) + F(u_{j+1}^k) \right]
+    $$
+\end{itemize}
+
+\clearpage

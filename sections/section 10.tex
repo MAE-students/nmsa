@@ -1,0 +1,478 @@
+\section{Lesson 10}\label{sec:les_10}
+
+In this lesson, we want to extend the wave problems using systems, describe the wave equation using hyperbolic systems and solving them.
+
+\subsection{Hyperbolic systems}
+
+Let's consider multiple transport equations, extending \eqref{eq:transport}:
+\begin{equation}\label{eq:hyper_sys}
+    \partial_t \underline{u} + [A] \ \partial_x \underline{u} = \underline{0}, \quad [A] \in \mathbb{R}^{p \times p}, \quad \underline{u}: \mathbb{R} \times \mathbb{R} \rightarrow \mathbb{R}^p
+\end{equation}
+
+The single transport equation occurs for $p=1$ and $[A] = a$.
+We can describe the wave equation for $p=2$ and:
+\begin{equation}
+    [A] =
+    \begin{bmatrix}
+        0 & -1 \\[3pt]
+        -\frac{\mu}{\rho} & 0 \\[3pt]
+    \end{bmatrix}
+    , \quad \underline{u} =
+    \begin{pmatrix}
+        \rho \ \partial_t u \\[3pt]
+        \mu \ \partial_x u
+    \end{pmatrix}
+\end{equation}
+
+The system \eqref{eq:hyper_sys} is hyperbolic when the matrix $[A]$ is diagonalizable and has \textbf{real eigenvalues}:
+\begin{equation}
+    [A] = [T][D][T]^{-1}, \quad [D] = \text{eig} ([A]) = \text{diag} (\lambda_1, \cdots, \lambda_p), \quad [T] = \left[\underline{\omega}_1, \cdots, \underline{\omega}_p \right]
+\end{equation}
+
+We can have both positive and negative eigenvalues:
+\begin{equation}
+    \lambda_1, \cdots, \lambda_{p_0} > 0, \quad \lambda_{p_0+1}, \cdots, \lambda_p < 0
+\end{equation}
+
+The relation between eigenvalues and eigenvectors is:
+\begin{equation}
+    [A] \ \underline{\omega}_i = \lambda_i \underline{\omega}_i, \quad i = 1, 2, \cdots, p
+\end{equation}
+
+We want to express the problem in terms of an auxiliary function $ \underline{w} $:
+\begin{equation}
+    \underline{w} = [T]^{-1} \underline{u} \Rightarrow \underline{u} = [T] \ \underline{w} \Rightarrow \partial_t \underline{u} = [T] \ \partial_t \underline{w}, \quad \partial_x \underline{u} = [T] \ \partial_x \underline{w}
+\end{equation}
+\begin{equation*}
+    \partial_t \underline{u} + [A] \ \partial_x \underline{u} = \underline{0} \Rightarrow [T] \ \partial_t \underline{w} + [A] [T] \ \partial_x \underline{w} = \underline{0} \Rightarrow [T]^{-1}[T] \ \partial_t \underline{w} + [T]^{-1} [A] [T] \ \partial_x \underline{w} = \underline{0}
+\end{equation*}
+
+The resulting system has $p$ \textbf{decoupled transport equations}:
+\begin{equation}
+    \partial_t \underline{w} + [D] \ \partial_x \underline{w} = \underline{0}, \quad w^i (x,t) = w_0^i (x-\lambda_i t) \Rightarrow
+    \begin{cases}
+        \partial_t w^1 + \lambda_1 \ \partial_x w^1 = 0 \\[3pt]
+        \cdots \\[3pt]
+        \partial_t w^p + \lambda_p \ \partial_x w^p = 0
+    \end{cases}
+\end{equation}
+
+We obtain the solutions $ \underline{u} $ from the auxiliary $ \underline{w} $:
+\begin{equation}
+    \underline{u}(x,t) = [T] \ \underline{w}(x,t) = (\underline{\omega}_1, \cdots, \underline{\omega}_p)
+    \left(
+    \begin{array}{c}
+        w^1(x,t) \\
+        \vdots \\
+        w^p(x,t) 
+    \end{array}
+    \right) = \sum_{i=1}^p \underline{\omega}_i w^i(x,t) = \sum_{i=1}^p \underline{\omega}_i w_0^i(x-\lambda_i t)
+\end{equation}
+
+The solution at point $(\overline{x}, \overline{t})$ is:
+\begin{equation}
+    \underline{u} (\overline{x}, \overline{t}) = \sum_{i=1}^p \underline{\omega}_i w_0^i(\overline{x}-\lambda_i \overline{t})
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Solution_system.png}
+    \caption{Visualisation of solution at position $(\overline{x}, \overline{t})$}
+\end{figure}
+
+For a wave equation ($p=2$) we have only two eigenvalues and characteristic lines:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Solution_2.png}
+    \caption{Visualisation of solution for the wave equation ($p=2$)}
+\end{figure}
+
+There is a mismatch between the coupled nature of the systems in $ \underline{u} $ and the decoupled one of the systems in $ \underline{w} $.
+This can be solved when imposing the \textbf{boundary conditions}.
+Let's consider the problem in \eqref{eq:hyper_sys}: we need to look at the two boundaries of $ \Omega = (a,b) \subset \mathbb{R} $.
+We remind that we have $ p_0 $ positive eigenvalues (which are related to $ x=a $) and $ p - p_0 $ negative eigenvalues (which are related to $ x=b $).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\linewidth]{Hyper_boundary.png}
+    \caption{Boundary conditions and eigenvalues $ \lambda_i$}
+\end{figure}
+
+Let's study the boundary $ x=a $:
+\begin{equation}
+    \underline{C}_i^T \underline{u} (a,t) = \psi_i (t), \quad t>0, \quad i = 1, \cdots, p_0, \quad \underline{C}_i \in \mathbb{R}^p \Leftrightarrow
+    \begin{cases}
+        C_1^1 u_1 (a,t) + \cdots + C_p^1 u_p (a,t) = \psi_1 (t) \\[3pt]
+        \vdots \\[3pt]
+        C_1^{p_0} u_1 (a,t) + \cdots + C_p^{p_0} u_p (a,t) = \psi_{p_0} (t)
+    \end{cases}
+\end{equation}
+
+This system has $p_0$ conditions and $p$ unknowns.
+Let's define a new matrix for this boundary:
+\begin{equation}
+    [Z_a] = \left[\underline{C}_1, \underline{C}_2, \cdots, \underline{C}_{p_0}, \underline{\omega}_{p_0+1}, \cdots, \underline{\omega}_p\right] \Rightarrow [Z_a] \ \underline{u} = \underline{\psi} 
+\end{equation}
+
+The condition (matrix form) is admissible if $[Z_a]$ matrix is invertible and it occurs that:
+\begin{equation}
+    \underline{C}_i = \underline{\omega}_i, \quad i = 1, \cdots, p_0 \Rightarrow [Z_a] = [T]
+\end{equation}
+
+So, the condition is equivalent to an absorbing condition.
+
+\subsection{Wave equation}
+
+We want now to focus on $p=2$ (wave equation):
+\begin{equation}
+    \begin{cases}
+        \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f(x,t) \\[3pt]
+        u(x,0) = u_0(x), \quad \partial_t u(x,0) = u_1(x) \\[3pt]
+        u(a,t) = g_1(t), \quad u(b,t) = g_2(t)
+    \end{cases}
+    \quad
+    \begin{array}{c}
+        x \in (a,b) \\[3pt]
+        t \in (0,T]
+    \end{array}
+\end{equation}
+
+The resulting system is:
+\begin{equation}
+    \begin{cases}
+        \partial_t \begin{pmatrix}
+            u_1 \\[3pt]
+            u_2
+        \end{pmatrix} + \begin{bmatrix}
+            0 & 1 \\[3pt]
+            \frac{\mu}{\rho} & 0
+        \end{bmatrix} \partial_x \begin{pmatrix}
+            u_1 \\[3pt]
+            u_2
+        \end{pmatrix} = \begin{pmatrix}
+            f \\[3pt]
+            0
+        \end{pmatrix} \\[3pt]
+        \begin{pmatrix}
+            u_1 \\[3pt]
+            u_2
+        \end{pmatrix} (x,0) = \begin{pmatrix}
+            \rho \ u_1(x) \\[3pt]
+            \mu \ \partial_x u_0(x)
+        \end{pmatrix} \\[3pt]
+        u_1(a,t) = \rho \ \partial_t u(a,t) = \rho \ \partial_t g_1(t) \\[3pt]
+        u_1(b,t) = \rho \ \partial_t u(b,t) = \rho \ \partial_t g_2(t)
+    \end{cases}
+    \qquad
+    \begin{array}{cc}
+        u_1 = \rho \ \partial_t u \\[3pt]
+        u_2 = \mu \ \partial_x u
+    \end{array}
+\end{equation}
+
+The eigenvalues of the system are:
+\begin{equation}
+    [A] = \begin{bmatrix}
+        0 & 1 \\[3pt]
+        \frac{\mu}{\rho} & 0
+    \end{bmatrix} \Rightarrow \det ([A] - \lambda [I]) = \lambda^2 - \frac{\mu}{\rho} = 0 \Rightarrow \lambda_{1,2} = \pm \sqrt{\frac{\mu}{\rho}} = \pm c, \quad c \in \mathbb{R}
+\end{equation}
+
+We want to decompose the matrix $[A]$ using the eigenvectors $ \underline{\omega}_1 $ and $ \underline{\omega}_2 $:
+\begin{equation}
+    [A] = [T][D][T]^{-1}, \quad [D] = \text{diag} (\lambda_1, \lambda_2) =
+    \begin{bmatrix}
+        c & 0 \\[3pt]
+        0 & -c
+    \end{bmatrix}
+    , \quad [T] = \left[\underline{\omega_1}, \underline{\omega}_2 \right]
+\end{equation}
+
+We remind the relation between the solution $ \underline{u} $ and the auxiliary function $ \underline{w} $:
+\begin{equation}
+    \underline{u} = [T] \ \underline{w} \Rightarrow \partial_t \underline{w} + [D] \ \partial_x \underline{w} = [T]^{-1} \underline{F}, \quad \underline{F} = 
+    \begin{pmatrix}
+        f \\[3pt]
+        0
+    \end{pmatrix}
+\end{equation}
+
+Let's compute the eigenvectors:
+\begin{equation}
+    [A] \underline{\omega}_1 = \lambda_1 \underline{\omega}_1 \Rightarrow
+    \begin{bmatrix}
+        0 & 1 \\[3pt]
+        c^2 & 0
+    \end{bmatrix}
+    \begin{pmatrix}
+        x \\[3pt]
+        y
+    \end{pmatrix}
+    = c
+    \begin{pmatrix}
+        x \\[3pt]
+        y
+    \end{pmatrix}
+\end{equation}
+\begin{equation*}
+    \begin{cases}
+        y = cx \\[3pt]
+        c^2 x = cy
+    \end{cases}
+    \Rightarrow
+    \begin{cases}
+        x=1 \\[3pt]
+        y=c
+    \end{cases}
+    \Rightarrow \underline{\omega}_1 =
+    \begin{pmatrix}
+        1 \\[3pt]
+        c
+    \end{pmatrix}
+    \text{ or } \underline{\omega}_1 = \frac{1}{\sqrt{1 + c^2}}
+    \begin{pmatrix}
+        1 \\[3pt]
+        c
+    \end{pmatrix}
+\end{equation*}
+
+\begin{equation*}
+    [A] \underline{\omega}_2 = \lambda_2 \underline{\omega}_2 \Rightarrow
+    \begin{bmatrix}
+        0 & 1 \\[3pt]
+        c^2 & 0
+    \end{bmatrix}
+    \begin{pmatrix}
+        x \\[3pt]
+        y
+    \end{pmatrix}
+    = -c
+    \begin{pmatrix}
+        x \\[3pt]
+        y
+    \end{pmatrix}
+\end{equation*}
+\begin{equation*}
+    \begin{cases}
+        y = cx \\[3pt]
+        c^2 x = -cy
+    \end{cases}
+    \Rightarrow
+    \begin{cases}
+        x=1 \\[3pt]
+        y=-c
+    \end{cases}
+    \Rightarrow \underline{\omega}_2 =
+    \begin{pmatrix}
+        1 \\[3pt]
+        -c
+    \end{pmatrix}
+    \text{ or } \underline{\omega}_2 = \frac{1}{\sqrt{1 + c^2}}
+    \begin{pmatrix}
+        1 \\[3pt]
+        -c
+    \end{pmatrix}
+\end{equation*}
+
+From that:
+\begin{equation}
+    [T] = \left[\underline{\omega_1}, \underline{\omega}_2\right] = \frac{1}{\sqrt{1 + c^2}}
+    \begin{bmatrix}
+        1 & 1 \\[3pt]
+        c & -c
+    \end{bmatrix}
+\end{equation}
+\begin{equation*}
+    [T]^{-1} = \sqrt{1 + c^2} \frac{1}{\det ([T])}
+    \begin{bmatrix}
+        -c & -1 \\[3pt]
+        -c & 1
+    \end{bmatrix}
+    = \frac{\sqrt{1 + c^2}}{2c}
+    \begin{bmatrix}
+        c & 1 \\[3pt]
+        c & -1
+    \end{bmatrix}
+\end{equation*}
+
+Now, we can explicit the auxiliary function:
+\begin{equation}
+    \underline{w} = [T]^{-1} \underline{u} = \frac{\sqrt{1 + c^2}}{2c}
+    \begin{pmatrix}
+        c u_1 + u_2 \\[3pt]
+        c u_1 - u_2
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        w_1 \\[3pt]
+        w_2
+    \end{pmatrix}
+\end{equation}
+
+We want to impose a boundary condition on $ \underline{w} $, reminding that only $u_1$ has conditions:
+\begin{equation}
+    w_1 + w_2 = \frac{\sqrt{1 + c^2}}{2c} \left( c u_1 + u_2 + c u_1 - u_2 \right) = \frac{\sqrt{1 + c^2}}{\cancel{2c}} \cancel{2c} \ u_1 = \sqrt{1 + c^2} \ u_1
+\end{equation}
+
+Using the boundary conditions for $ u_1 $:
+\begin{equation}
+    \begin{cases}
+        w_1(a,t) + w_2(a,t) = \sqrt{1 + c^2} \ u_1(a,t) = \sqrt{1 + c^2} \ \rho \ \partial_t g_1(t) \\[3pt]
+        w_1(b,t) + w_2(b,t) = \sqrt{1 + c^2} \ u_1(b,t) = \sqrt{1 + c^2} \ \rho \ \partial_t g_2(t)
+    \end{cases}
+\end{equation}
+
+The boundary conditions for $ \underline{w} $ become:
+\begin{equation}
+    \begin{bmatrix}
+        1 & 1 \\[3pt]
+        1 & 1
+    \end{bmatrix}
+    \begin{pmatrix}
+        w_1 \\[3pt]
+        w_2
+    \end{pmatrix}
+    = \rho \sqrt{1 + c^2} \ \partial_t
+    \begin{pmatrix}
+        g_1(t) \\[3pt]
+        g_2(t)
+    \end{pmatrix}
+\end{equation}
+
+We obtained the \textbf{coupling} of $w_1$ and $w_2$.
+This is where $u_1$ and $u_2$, which are decoupled, are transformed into $w_1$ and $w_2$, which are coupled.
+
+Recap, to solve the initial matrix system in $ \underline{u} $:
+\begin{enumerate}
+    \item compute $[T]$ and $[T]^{-1}$ (eigenvectors)
+    \item use the finite difference scheme you prefer to solve
+    $$ \partial_t \underline{w} + [D] \ \partial_x \underline{w} = [T]^{-1} \underline{F} $$
+    \item impose boundary conditions on $ \underline{w} $
+    $$
+    \begin{cases}
+        w_1(a,t^{n+1}) = \sqrt{1 + c^2} \ \rho \ \partial_t g_1(t^{n+1}) - w_2(a,t^{n+1}) \\[3pt]
+        w_2(b,t^{n+1}) = \sqrt{1 + c^2} \ \rho \ \partial_t g_2(t^{n+1}) - w_1(b,t^{n+1})
+    \end{cases}
+    $$
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Boundary_w.png}
+    \caption{Boundary conditions for $w_1$ and $w_2$}
+\end{figure}
+    \item compute $ \underline{u} = [T] \underline{w} $, and in this case
+    $$
+    \underline{u} =
+    \begin{pmatrix}
+        u_1 \\[3pt]
+        u_2
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \rho \ \partial_t u \\[3pt]
+        \mu \ \partial_x u
+    \end{pmatrix}
+    $$
+\end{enumerate}
+
+\subsection{Alternative for solving hyperbolic systems}
+
+We want to solve the wave homogeneous equation using new auxiliary variables $v$ and $\sigma$:
+\begin{equation}
+    \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = 0, \quad
+    \begin{cases}
+        v = \partial_t u \\[3pt]
+        \sigma = \mu \ \partial_x u
+    \end{cases}
+    \Rightarrow
+    \begin{cases}
+        \rho \ \partial_t v - \partial_x \sigma = 0 \\[3pt]
+        \partial_t \sigma - \mu \ \partial_x v = 0
+    \end{cases}
+\end{equation}
+
+The system that describes this problem is:
+\begin{equation}
+    \partial_t
+    \begin{pmatrix}
+        v \\[3pt]
+        \sigma
+    \end{pmatrix}
+    +
+    \begin{bmatrix}
+        0 & -\dfrac{1}{\rho} \\[3pt]
+        - \mu & 0
+    \end{bmatrix}
+    \partial_x
+    \begin{pmatrix}
+        v \\[3pt]
+        \sigma
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        0 \\[3pt]
+        0
+    \end{pmatrix}
+\end{equation}
+
+As we did before, the eigenvalues of the system are:
+
+\begin{equation}
+    [A] =
+    \begin{bmatrix}
+        0 & - \frac{1}{\rho} \\[3pt]
+        - \mu & 0
+    \end{bmatrix}
+    \Rightarrow \det ([A] - \lambda [I]) = \lambda^2 - \frac{\mu}{\rho} = 0 \Rightarrow \lambda_{1,2} = \pm \sqrt{\frac{\mu}{\rho}} = \pm c, \quad c \in \mathbb{R}
+\end{equation}
+
+We want to use a discretization that does not use any characteristic variables.
+Let's analyse the first equation and how it translates in computational terms:
+\begin{equation}
+    \partial_t v = \frac{1}{\rho} \partial_x \sigma \Rightarrow \frac{v_k^{n+\frac{1}{2}} - v_k^{n-\frac{1}{2}}}{\Delta t} = \frac{1}{\rho_k} \frac{\sigma_{k+\frac{1}{2}}^n - \sigma_{k-\frac{1}{2}}^n}{\Delta x}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Wave_homo_1.png}
+    \caption{Evaluation of $ \partial_t v $ (blue) and $ \partial_x \sigma $ (red)}
+\end{figure}
+
+Let's analyse the second equation and how it translates in computational terms:
+\begin{equation}
+    \partial_t \sigma = \mu \ \partial_x v \Rightarrow \frac{\sigma_{k+\frac{1}{2}}^{n+1} - \sigma_{k+\frac{1}{2}}^n}{\Delta t} = \mu_{k+\frac{1}{2}} \frac{v_{k+1}^{n+\frac{1}{2}} - v_k^{n+\frac{1}{2}}}{\Delta x}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Wave_homo_2.png}
+    \caption{Evaluation of $ \partial_t \sigma $ (red) and $ \partial_x v $ (blue)}
+\end{figure}
+
+Putting together both discretization:
+\begin{equation}
+    \begin{cases}
+        v_k^{n+\frac{1}{2}} = v_k^{n-\frac{1}{2}} + \dfrac{\Delta t}{\Delta x} \dfrac{1}{\rho_k} \left( \sigma_{k+\frac{1}{2}}^n - \sigma_{k-\frac{1}{2}}^n \right) \\[3pt]
+        \sigma_{k+\frac{1}{2}}^{n+1} = \sigma_{k+\frac{1}{2}}^n + \dfrac{\Delta x}{\Delta t} \mu_{k+\frac{1}{2}} \left( v_{k+1}^{n+\frac{1}{2}} - v_k^{n+\frac{1}{2}} \right)
+    \end{cases}
+\end{equation}
+
+We obtain a scheme \textbf{explicit in time}: from $ \sigma^n $ we compute $ v^{n+\frac{1}{2}} $, then we use it to compute $ \sigma^{n+1} $, and so on.
+We notice that $v$ is updated at half-time level ($n+\frac{1}{2}$), while $\sigma$ is updated at half-space level ($k+\frac{1}{2}$).
+We have defined the so called \textbf{staggered finite difference scheme}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{Staggered_fds.png}
+    \caption{Staggered finite difference: $ \circ $ for $v$, $ \triangle $ for $\sigma$, $ \times $ for $\rho$, $ \bullet $ for $\mu$}
+\end{figure}
+
+With a scheme such as this, we need to pay attention to initial and boundary conditions:
+\begin{equation}
+    \begin{cases}
+        v(x,0) = v_0 \rightarrow \text{ $v$ not defined at $t=0$} \\[3pt]
+        \sigma(x,0) = \sigma_0
+    \end{cases}
+\end{equation}
+\begin{equation*}
+    \begin{cases}
+        v(0,t) = \varphi(t) \\[3pt]
+        \sigma(0,t) = \psi(t) \rightarrow \text{ $\sigma$ not defined at $x=\{0,L\}$}
+    \end{cases}
+\end{equation*}
+
+\clearpage

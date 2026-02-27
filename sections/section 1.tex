@@ -1,0 +1,33 @@
+\section{Lesson 1}\label{sec:les_01}
+
+The first lesson is an introduction to mathematical modelling, focusing on the possibilities and problems of numerical computation.
+
+\subsection{Introduction to mathematical modelling}
+
+The goal of this course is to obtain \textbf{numerical solutions} of continuous problems such as PDEs (partial differential equations).
+A \textbf{physical problem} occurs (i.e. sound propagating in a room) and it is described through \textbf{mathematical modelling}.
+The following step is to implement a \textbf{numerical algorithm} by means of a software.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{math_cycle.png}
+    \caption{Mathematical modelling cycle}
+    
+\end{figure}
+
+Starting from a wave equation (as any other problem), we define a numerical model as $ F (\underline{x}, \underline{d}) = 0 $ (equations $ F $, solutions $ \underline{x} $, data $ \underline{d} $), which translates into the numerical algorithm $ F_n (\underline{x}_n, \underline{d}_n) = 0 $ (approximated equations $ F_n $, solutions $ \underline{x}_n $, data $ \underline{d}_n $).
+The solution $ \underline{x} $ is the \textbf{analytic solution}, which differs from the approximated one $ \underline{x}_n $ called \textbf{numerical solution}.
+In the end, we compare the algorithm outputs with the physical observations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{num_errors.png}
+    \caption{Numerical modelling approximations}
+    
+\end{figure}
+
+We start talking about the \textbf{finite element method}, introducing later on the \textbf{finite difference method} and the \textbf{finite volume method}.
+
+The rest of the lesson has been omitted for convenience.
+
+\clearpage

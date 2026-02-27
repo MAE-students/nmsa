@@ -1,0 +1,446 @@
+\section{Lesson 5}\label{sec:les_05}
+
+In section \ref{sec:les_04}, we considered \textbf{time-dependent problems} with Neumann conditions only.
+We want now extend \eqref{eq:strong_form_Neumann_time} changing \textbf{boundary conditions} for each scenario.
+As a reminder, different boundary conditions can always be mixed.
+
+\subsection{Boundary conditions for time-dependent problems}
+
+Let's consider a system like \eqref{eq:strong_form_Neumann_time} without boundary conditions:
+\begin{equation}\label{eq:strong_form_time}
+    \begin{cases}
+        \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) = f, \quad x \in (0,L), \ t \in (0,T] \\[3pt]
+        u(x,0) = u_0(x) \\[3pt]
+        \partial_t u(x,0) = v_0(x)
+    \end{cases}
+\end{equation}
+
+We want to study the system \eqref{eq:strong_form_time} using different boundary conditions, functions of time at the end points.
+
+\subsection{Dirichlet conditions}
+
+The Dirichlet conditions, also called \textbf{sound soft boundary conditions} in acoustic problems, describe a scenario with controlled movement of the end points.
+According to \eqref{eq:Dirichlet}:
+\begin{equation}\label{eq:Dirichlet_time}
+    u(0,t) = g_1^D(t), \quad u(L,t) = g_2^D(t)
+\end{equation}
+
+We define an \textbf{auxiliary function} $ R_g(x,t) \in H^1 (0,L) $, similarly to what we did in \eqref{eq:R_aux}, so that:
+\begin{equation}\label{eq:R_aux_time}
+    R_g (x,t) =
+    \begin{cases}
+        g_1^D (t), \quad x=0 \\[3pt]
+        g_2^D (t), \quad x=L
+    \end{cases}
+    = g_1^D (t) + \frac{g_2^D (t) - g_1^D (t)}{L} x, \quad x \in (0,L), t \in (0,T]
+\end{equation}
+
+We can rewrite \eqref{eq:strong_form_time} using a \textbf{new unknown function} $ w(x,t) \in H_0^1 (0,L) $ with zero conditions, as we did in \eqref{eq:w_aux}:
+\begin{equation}
+    w(x,t) = u(x,t) - R_g(x,t) \Rightarrow
+    \begin{cases}
+        \rho \ \partial_{tt} w - \partial_x \left( \mu \ \partial_x w \right) = f - \rho \ \partial_{tt} R_g + \partial_x \left( \mu \ \partial_x R_g \right) \\[3pt]
+        w(0,t) = w(L,t) = 0 \\[3pt]
+        w(x,0) = u_0 (x) - R_g (x,0) = u'_0 (x) \\[3pt]
+        \partial_t w(x,0) = v_0 (x) - \partial_t R_g (x,0) = v'_0 (x)
+    \end{cases}
+\end{equation}
+
+The resulting \textbf{weak formulation} states that the unknown function $ w(x,t) \in H_0^1 (0,L) $ is solution of:
+\begin{equation}
+    \int_0^L \rho \ \partial_{tt} w \ v \ dx + \int_0^L \mu \ \partial_x w \ \partial_x v \ dx = \int_0^L f v \ dx - \left[ \int_0^L \rho \ \partial_{tt} R_g \ v \ dx + \int_0^L \mu \ \partial_x R_g \ \partial_x v \ dx \right]
+\end{equation}
+\begin{equation*}
+    \Leftrightarrow m \left( \partial_{tt} w, v \right) + a \left( w, v \right) = F(v) - \left[ m \left( \partial_{tt} R_g, v \right) + a \left( R_g, v \right) \right], \quad \forall t \in (0,T], \ v \in H_0^1 (0,L)
+\end{equation*}
+
+Whose initial conditions are:
+\begin{equation}
+    \begin{cases}
+        w(x,0) = u_0 (x) - R_g (x,0) = u'_0 (x) \\[3pt]
+        \partial_t w(x,0) = v_0 (x) - \partial_t R_g (x,0) = v'_0 (x)
+    \end{cases}
+\end{equation}
+
+The finite element method, obtained through space discretization (from space $ V = H_0^1 (0,L) $ to $ V_{h,0} \subset V $, reminder at \eqref{eq:piece_wise_zero}), allows to express the following \textbf{algebraic formulation}:
+\begin{equation}\label{eq:Dirichlet_ode}
+    \begin{cases}
+        [M] \ \ddot{\underline{w}} (t) + [A] \ \underline{w} (t) = \underline{F} (t) - \left[ [M] \ \ddot{\underline{R_g}} (t) + [A] \ \underline{R_g} (t) \right] = \underline{F} (t) - \underline{b} (t), \quad \forall t \in (0,T] \\[3pt]
+        \underline{w} (0) = \underline{u}'_0 \\[3pt]
+        \underline{\dot{w}} (0) = \underline{v}'_0
+    \end{cases}
+\end{equation}
+
+By discretizing in time, we obtain the following \textbf{general step}:
+\begin{equation}
+    [M] \ \underline{w}_{i+1} = \Delta t^2 \left( \underline{b}_i - [A] \ \underline{w}_i \right) + 2 [M] \ \underline{w}_i - [M] \ \underline{w}_{i-1}, \quad \underline{w}_i = \underline{w} (t_i)
+\end{equation}
+
+The previous system to solve looks like $ [M] \ \underline{w}_{i+1} = \underline{G}_i $.
+The Dirichlet conditions impose on $ \underline{w} (t) $ that:
+\begin{equation}
+    \underline{w}_{i+1} = 
+    \begin{pmatrix}
+        0 \\[3pt]
+        * \\[3pt]
+        \vdots \\[3pt]
+        * \\[3pt]
+        0
+    \end{pmatrix}
+\end{equation}
+
+Which applied to the definition of $ w(x,t) $, allows to express $ \underline{u}_{i+1} $:
+\begin{equation}
+    \underline{R_g}_{i+1} = 
+    \begin{cases}
+        g_1^D (t_{i+1}) \\[3pt]
+        0 \\[3pt]
+        \vdots \\[3pt]
+        0 \\[3pt]
+        g_2^D (t_{i+1})
+    \end{cases}
+    \Rightarrow
+    \underline{u}_{i+1} = \underline{w}_{i+1} + \underline{R_g}_{i+1}
+\end{equation}
+
+\subsection{Neumann conditions}
+
+The Neumann conditions, also called \textbf{sound hard boundary conditions} in acoustic problems, describe a scenario with traction applied at the end points.
+According to \eqref{eq:Neumann}:
+\begin{equation}
+    \mu \ \partial_x u (0,t) = g_1^N (t), \quad \mu \ \partial_x u (L,t) = g_2^N (t)
+\end{equation}
+
+This specific problem has been studied in section \ref{sec:les_04}, but for the sake of simplicity let's repeat it here.
+
+The \textbf{weak formulation} states that $ u(x,t) \in H^1 (0,L) $ is solution $ \forall t \in (0,T] $ of:
+\begin{equation}
+    \int_0^L \rho \ \partial_{tt} u \ v \ dx + \int_0^L \mu \ \partial_x u \partial_x v \ dx = \int_0^L f v \ dx + g_2^N(t) v(L) - g_1^N(t) v(0)
+\end{equation}
+\begin{equation*}
+    \Leftrightarrow m \left( \partial_{tt} u,v \right) + a(u,v) = F(v), \quad \forall v \in H^1 (0,L)
+\end{equation*}
+
+Whose initial conditions are presented at the beginning of this section:
+\begin{equation}
+    \begin{cases}
+        u(x,0) = u_0(x) \\[3pt]
+        \partial_t u(x,0) = v_0(x)
+    \end{cases}
+\end{equation}
+
+The \textbf{finite element formulation}, obtained through space discretization (from space $ V = H_0^1 (0,L) $ to $ V_{h,0} \subset V $, reminder at \eqref{eq:piece_wise_zero}), states that $ u_h \in V_h $ is solution of (for more details see \eqref{eq:fe_form_Neumann_time}):
+\begin{equation}
+    \begin{cases}
+        m \left( \partial_{tt} u,v \right) + a(u_h,v_h) = F(v_h), \quad \forall v_h \in V_h \\[3pt]
+        u_h (x,0) = u_{0,h} (x) \\[3pt]
+        \partial_t u_h (x,0) = v_{0,h} (x)
+    \end{cases}
+\end{equation}
+
+Let's remind how we defined the basis function $ \left\{ \varphi_j \right\}_{j=0}^{N_h} $ for the space $ V_h $:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{basis_func.png}
+    \caption{Basis functions $ \varphi_j $ for the space $ V_h $}
+\end{figure}
+
+We want to evaluate $ F(\varphi_j) $, which is the basic step to obtain $ F(v_h) $ with $ v_h $ linear combination of basis functions $ \varphi_j $:
+\begin{equation}
+    F(\varphi_h) = \underset{= F_j (t)}{\int_0^L f \varphi_j (x) \ dx} + \underset{\neq 0 \text{ only for } j=N_h}{\cancel{g_2^N(t) \varphi_j (L)}} - \underset{\neq 0 \text{ only for } j=0}{\cancel{g_1^N(t) \varphi_j (0)}}
+\end{equation}
+\begin{equation*}
+    \Rightarrow \underline{F} (t) = 
+    \begin{pmatrix}
+        \underline{F}_0 (t) \\[3pt]
+        \underline{F}_1 (t) \\[3pt]
+        \vdots \\[3pt]
+        \underline{F}_{N_h} (t)
+    \end{pmatrix}
+    + 
+    \begin{pmatrix}
+        0 \\[3pt]
+        \vdots \\[3pt]
+        0 \\[3pt]
+        g_2^N (t)
+    \end{pmatrix}
+    - 
+    \begin{pmatrix}
+        g_1^N (t) \\[3pt]
+        0 \\[3pt]
+        \vdots \\[3pt]
+        0
+    \end{pmatrix}
+\end{equation*}
+
+\subsection{Robin conditions}
+
+The \textbf{Robin conditions} describe a scenario of elastic attachment at the end points (Neumann conditions are the specific case of $ a = b = 0 $):
+\begin{equation}
+    \mu \ \partial_x u (0,t) - a \ u (0,t) = g_1^R (t), \quad \mu \ \partial_x u (L,t) - b \ u (L,t) = g_2^R (t)
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{robin_application.png}
+    \caption{Example of Robin problem}
+\end{figure}
+
+The weak formulation starts, as usual, from:
+\begin{equation}
+    \int_0^L \rho \ \partial_{tt} u \ v \ dx + \int_0^L \mu \ \partial_x u \ \partial_x v \ dx - \left[ \mu \ \partial_x u \ v \right]_0^L = \int_0^L f v \ dx
+\end{equation}
+
+We notice that:
+\begin{equation}
+    - \left[ \mu \ \partial_x u \ v \right]_0^L =  - \mu \ \partial_x u(L,t) \ v(L) + \mu \ \partial_x u(0,t) \ v(0) =
+\end{equation}
+\begin{equation*}
+    = - \left[ g_2^R (t) - b \ u(L,t) \right] v(L) + \left[ g_1^R (t) + a \ u(0,t) \right] v(0)
+    = - g_2^R (t) v(L) + b \ u(L,t) v(L) + g_1^R (t) v(0) + a \ u(0,t) v(0)
+\end{equation*}
+
+As a result, the \textbf{weak formulation} states that $ u(x,t) \in H^1 (0,L) $ is solution of (plus initial conditions, $ \forall v \in H^1 (0,L) $):
+\begin{equation}
+    m \left( \partial_{tt} u,v \right) + a(u,v) + a \ u(0,t) v(0) + b \ u(L,t) v(L) = F(v) +  g_2^R (t) v(L) - g_1^R (t) v(0)
+\end{equation}
+
+The \textbf{finite element formulation}, obtained through space discretization (from space $ V = H^1 (0,L) $ to $ V_h \subset V $, reminder at \eqref{eq:piece_wise}), states that $ u_h \in V_h $ is solution of:
+\begin{equation}
+    m \left( \partial_{tt} u_h, v_h \right) + a(u_h, v_h) + a \ u_h(0,t) v_h(0) + b \ u_h(L,t) v_h(L) =
+\end{equation}
+\begin{equation*}
+    = F(v_h) +  g_2^R (t) v_h(L) - g_1^R (t) v_h(0), \quad \forall v_h \in V_h
+\end{equation*}
+
+The \textbf{algebraic formulation} is obtained, as usual, following the logic of \eqref{eq:alg_form_Neumann}, which is defining $ u_h \in V_h $ as linear combination of basis functions and $ v_h = \varphi_i $ as in \eqref{eq:Vh_basis}:
+\begin{equation}
+    [M] \ \ddot{\underline{u}}(t) + [A] \ \underline{u}(t) + [R] \ \underline{u}(t) = \underline{F}(t), \quad \forall t \in (0,T]
+\end{equation}
+
+The only difference with previous cases is the \textbf{new matrix} $ [R] $ to define:
+\begin{equation}
+    \left.
+    \begin{array}{c}
+        u_h (x,t) = \sum_{j=0}^{N_h} u_j(t) \varphi_j(x) \\[3pt]
+        v_h(x) = \varphi_i(x), \quad \forall i = 0, \cdots , N_h
+    \end{array}
+    \right] \Rightarrow
+    b \ u_h(L,t) v(L) = b \sum_{j=0}^{N_h} u_j(t) \ \varphi_j(L) \varphi_i(L) =
+\end{equation}
+\begin{equation*}
+    = b \sum_{j=0}^{N_h} u_j(t) \ R_{ij}^L = b \ u_{N_h} (t) \Rightarrow [R^L] = 
+    \begin{pmatrix}
+        0 & \cdots & 0 & 0 \\[3pt]
+        \vdots & \ddots & \vdots & \vdots \\[3pt]
+        0 & \cdots & 0 & 0 \\[3pt]
+        0 & \cdots & 0 & b \\[3pt]
+    \end{pmatrix}
+    \in \mathbb{R}^{N_h+1 \times N_h+1}
+\end{equation*}
+
+\begin{equation}
+    \left.
+    \begin{array}{c}
+        u_h (x,t) = \sum_{j=0}^{N_h} u_j(t) \varphi_j(x) \\[3pt]
+        v_h(x) = \varphi_i(x), \quad \forall i = 0, \cdots , N_h
+    \end{array}
+    \right] \Rightarrow
+    a \ u_h(0,t) v(0) = a \sum_{j=0}^{N_h} u_j(t) \ \varphi_j(0) \varphi_i(0) =
+\end{equation}
+\begin{equation*}
+    = a \sum_{j=0}^{N_h} u_j(t) \ R_{ij}^0 = a \ u_0 (t) \Rightarrow [R^0] = 
+    \begin{pmatrix}
+        a & 0 & \cdots & 0 \\[3pt]
+        0 & 0 & \cdots & 0 \\[3pt]
+        \vdots & \vdots & \ddots & \vdots \\[3pt]
+        0 & 0 & \cdots & 0 \\[3pt]
+    \end{pmatrix}
+    \in \mathbb{R}^{N_h+1 \times N_h+1}
+\end{equation*}
+
+Assembling $ [R] $ and defining a new matrix $ [\hat{A}] $ for notation:
+\begin{equation}
+    [R] = [R^L] + [R^0] = 
+    \begin{pmatrix}
+        a & 0 & \cdots & 0 \\[3pt]
+        0 & 0 & \cdots & 0 \\[3pt]
+        \vdots & \ddots & \ddots & \vdots \\[3pt]
+        0 & \cdots & 0 & 0 \\[3pt]
+        0 & \cdots & 0 & b \\[3pt]
+    \end{pmatrix}, \quad
+    [\hat{A}] = [A] + [R] \Rightarrow [M] \ \ddot{\underline{u}} + [\hat{A}] \ \underline{u} = \underline{F}
+\end{equation}
+
+
+\subsection{Periodic conditions}
+
+We remind the periodic conditions of \eqref{eq:periodic}, valid in infinite space domains:
+\begin{equation}
+    u(0,t) = u(L,t)
+\end{equation}
+
+Let's follow the steps of the Neumann conditions, using $ g_1^N = g_2^N = 0 $, then we discretize in space (finite element method) and time (leap-frog scheme):
+\begin{equation}
+    u_h(x,t) = \sum_{j=0}^{N_h} u_j(t) \ \varphi_j(x), \quad [M] \ \underline{u}_{i+1} = \underline{G}_i
+\end{equation}
+\begin{equation*}
+    u_h(0,t) = u_h(L,t) \Leftrightarrow u_0(t) = u_{N_h}(t) \Rightarrow u_0^{i+1} = u_{N_h}^{i+1}, \ \forall i \quad
+    \underline{u}_{i+1} =
+    \begin{pmatrix}
+        u_0^{i+1} \\[3pt]
+        \vdots \\[3pt]
+        u_{N_h}^{i+1}
+    \end{pmatrix}
+\end{equation*}
+
+We may define and change $ [M] \ \underline{u}_{i+1} = \underline{G}_i $ as:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{periodic_matrix.png}
+    \caption{Algebraic formulation and computations for periodic problems}
+\end{figure}
+
+\subsection{Impedance conditions}
+
+We remind the impedance conditions of \eqref{eq:impedance} as (wave speed $ c $, absorption for $ \alpha = 1 $):
+\begin{equation}
+    \alpha \ \partial_t u(0,t) - c \ \partial_x u(0,t) = 0, \quad \alpha \ \partial_t u(L,t) + c \ \partial_x u(L,t) = 0
+\end{equation}
+\begin{equation*}
+    \Rightarrow \partial_x u(0,t) = \frac{\alpha}{c} \partial_t u(0,t), \quad \partial_x u(L,t) = - \frac{\alpha}{c} \partial_t u(L,t)
+\end{equation*}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{impedance_problem.png}
+    \caption{Example of impedance problem}
+\end{figure}
+
+The weak formulation starts, as usual, from:
+\begin{equation}
+    \int_0^L \rho \ \partial_{tt} u \ v \ dx + \int_0^L \mu \ \partial_x u \ \partial_x v \ dx - \left[ \mu \ \partial_x u \ v \right]_0^L = \int_0^L f v \ dx
+\end{equation}
+\begin{equation*}
+    - \left[ \mu \ \partial_x u \ v \right]_0^L =  - \mu \ \partial_x u(L,t) \ v(L) + \mu \ \partial_x u(0,t) \ v(0) = - \mu \left[ - \frac{\alpha}{c} \partial_t u(L,t) \right] v(L) + \mu \left[ \frac{\alpha}{c} \partial_t u(L,t) \right] \ v(0)
+\end{equation*}
+\begin{equation*}
+    \mu \frac{\alpha}{c} = \alpha \sqrt{\mu \rho} \Rightarrow - \left[ \mu \ \partial_x u \ v \right]_0^L = \alpha \sqrt{\mu \rho} \ \partial_t u(L,t) \ v(L) + \alpha \sqrt{\mu \rho} \ \partial_t u(0,t) \ v(0)
+\end{equation*}
+
+As a result, the \textbf{weak formulation} states that $ u(x,t) \in H^1 (0,L) $ is solution of (plus initial conditions, $ \forall v \in H^1 (0,L) $):
+\begin{equation}
+    m \left( \partial_{tt} u,v \right) + a(u,v) + \alpha \sqrt{\mu \rho} \ \partial_t u(L,t) \ v(L) + \alpha \sqrt{\mu \rho} \ \partial_t u(0,t) \ v(0) = F(v)
+\end{equation}
+
+The \textbf{algebraic formulation} is obtained, as usual, following the logic of \eqref{eq:alg_form_Neumann}, which is defining $ u_h \in V_h $ as linear combination of basis functions and $ v_h = \varphi_i $ as in \eqref{eq:Vh_basis}:
+\begin{equation}
+    [M] \ \ddot{\underline{u}}(t) + [A] \ \underline{u}(t) + [S] \ \dot{\underline{u}}(t) = \underline{F}(t), \quad \forall t \in (0,T]
+\end{equation}
+
+By following the same procedure of Robin's conditions:
+\begin{equation}
+    [S] =
+    \begin{pmatrix}
+        \alpha \sqrt{\mu \rho} & 0 & \cdots & 0 \\[3pt]
+        0 & 0 & \cdots & 0 \\[3pt]
+        \vdots & \ddots & \ddots & \vdots \\[3pt]
+        0 & \cdots & 0 & 0 \\[3pt]
+        0 & \cdots & 0 & \alpha \sqrt{\mu \rho} \\[3pt]
+    \end{pmatrix}
+\end{equation}
+
+Now, we need to discretize in time (leap-frog scheme, for any need check section \ref{sec:les_04}), adding the expression for $ \dot{\underline{u}}(t) $:
+\begin{equation}
+    \dot{\underline{u}}(t_i) = \dot{\underline{u}}_i \approx \frac{\underline{u}_{i+1} - \underline{u}_{i-1}}{2 \ \Delta t}
+\end{equation}
+
+The last expression is called \textbf{central difference} and is a 2nd order approximation (error goes like $ \Delta t^2 $).
+The leap-frog scheme as the following \textbf{general step}:
+\begin{equation}
+    [M] \frac{\underline{u}_{i+1} - 2 \underline{u}_i + \underline{u}_{i-1}}{\Delta t^2} + [A] \ \underline{u}_i + [S] \frac{\underline{u}_{i+1} - \underline{u}_{i-1}}{2 \ \Delta t} = \underline{F}_i
+\end{equation}
+\begin{equation*}
+    [M] \left( \underline{u}_{i+1} - 2 \underline{u}_i + \underline{u}_{i-1} \right) + \Delta t^2 \ [A] \ \underline{u}_i + \frac{\Delta t}{2} [S] \left( \underline{u}_{i+1} - \underline{u}_{i-1} \right) = \Delta t^2 \ \underline{F}_i
+\end{equation*}
+\begin{equation*}
+    \left( [M] + \frac{\Delta t}{2} [S] \right) \underline{u}_{i+1} = \Delta t^2 \left( \underline{F}_i - [A] \ \underline{u}_i \right) + \frac{\Delta t}{2} [S] \ \underline{u}_{i-1} - [M] \ \underline{u}_{i-1} + 2 [M] \ \underline{u}_i
+\end{equation*}
+
+And \textbf{first step}:
+\begin{equation}
+    [M] \ \ddot{\underline{u}}(t_0) + [A] \ \underline{u}(t_0) + [S] \ \dot{\underline{u}}(t_0) = \underline{F}(t_0), \quad \underline{u}(t_0) = \underline{u}_0, \ \dot{\underline{u}}(t_0) = \underline{v}_0
+\end{equation}
+\begin{equation*}
+    \Rightarrow [M] \ \ddot{\underline{u}}_0 = \underline{F}(t_0) - [A] \ \underline{u}_0 - [S] \ \underline{v}_0
+\end{equation*}
+
+Expanding the second derivative $ \ddot{\underline{u}} $ up to the 2nd order:
+\begin{equation}
+    [M] \frac{2}{\Delta t^2} \left( \underline{u}_1 - \underline{u}_0 - \Delta t \ \underline{v}_0 \right) = \underline{F}(t_0) - [A] \ \underline{u}_0 - [S] \ \underline{v}_0
+\end{equation}
+\begin{equation*}
+    \Rightarrow [M] \ \underline{u}_1 = \frac{\Delta t^2}{2} \left( \underline{F}(t_0) - [A] \ \underline{u}_0 - [S] \ \underline{v}_0 \right) + [M] \ \underline{u}_0 + \Delta t \ [M] \ \underline{v}_0
+\end{equation*}
+
+\subsection{Verification tests}
+
+Let's make some examples of computation of all scenarios by assuming some values:
+\begin{equation}
+    u(x,t) = \cos \left( k x - \omega t \right), \quad \mu = \rho = 1, \ c = \sqrt{\frac{\mu}{\rho}} = 1
+\end{equation}
+\begin{equation*}
+    \partial_t u(x,t) = \omega \sin \left( k x - \omega t \right), \quad \partial_{tt} u(x,t) = - \omega^2 \cos \left( k x - \omega t \right)
+\end{equation*}
+\begin{equation*}
+    \partial_x u(x,t) = - k \sin \left( k x - \omega t \right), \quad \partial_{xx} u(x,t) = - k^2 \cos \left( k x - \omega t \right)
+\end{equation*}
+
+Let's consider \eqref{eq:strong_form_time}, it becomes:
+\begin{equation}
+    \begin{cases}
+        \partial_{tt} u - \partial_{xx} u = \left( k^2 - \omega^2 \right) \cos \left( k x - \omega t \right) = f \\[3pt]
+        u(x,0) = \cos \left( kx \right) \\[3pt]
+        \partial_t u(x,0) = \omega \sin \left( kx \right)
+    \end{cases}
+\end{equation}
+
+Dirichlet conditions become:
+\begin{equation}
+    \begin{cases}
+        u(0,t) = g_1^D (t) = \cos \left( \omega t \right) \\[3pt]
+        u(L,t) = g_2^D (t) = \cos \left( k L - \omega t \right)
+    \end{cases}
+\end{equation}
+
+Neumann conditions become:
+\begin{equation}
+    \begin{cases}
+        \mu \ \partial_x u (0,t) = g_1^N (t) = k \sin \left( \omega t \right) \\[3pt]
+        \mu \ \partial_x u (L,t) = g_2^N (t) = -k \sin \left( k L - \omega t \right)
+    \end{cases}
+\end{equation}
+
+Robin conditions ($ a = b = 1 $) become:
+\begin{equation}
+    \begin{cases}
+        \mu \ \partial_x u (0,t) - u(0,t) = g_1^R (t) = k \sin \left( \omega t \right) - \cos \left( \omega t \right) \\[3pt]
+        \mu \ \partial_x u (L,t) + u(L,t) = g_2^R (t) = -k \sin \left( k L - \omega t \right) + \cos \left( k L - \omega t \right)
+    \end{cases}
+\end{equation}
+
+Periodic conditions become:
+\begin{equation}
+    u(0,t) = u(L,t) \Leftrightarrow \cos \left( \omega t \right) = \cos \left( k L - \omega t \right) \Rightarrow kL = 2 \pi \Rightarrow k = \frac{2 \pi}{L}
+\end{equation}
+
+Absorbing conditions ($ \alpha = 1 $) become:
+\begin{equation}
+    \begin{cases}
+        \alpha \ \partial_t u(0,t) - c \ \partial_x u(0,t) = \alpha \ \omega \sin \left( - \omega t \right) - c \left( - k \sin \left( - \omega t \right) \right) = \left( \alpha \omega + ck \right) \sin \left( - \omega t \right) = 0 \\[3pt]
+        \alpha \ \partial_t u(L,t) + c \ \partial_x u(L,t) = \left( \alpha \omega + ck \right) \sin \left( kL - \omega t \right) = 0
+    \end{cases}
+\end{equation}
+\begin{equation*}
+    c = 1, \ \alpha = 1 \Rightarrow k = - \omega
+\end{equation*}
+
+\clearpage

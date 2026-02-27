@@ -1,0 +1,299 @@
+\section{Lesson 6}\label{sec:les_06}
+
+Up to section \ref{sec:les_05}, we studied simple wave equations (in both space and time) without any damping effect.
+We want now to present the \textbf{PML conditions}, introduce \textbf{damped wave equations} and focus on \textbf{absorbing layers}.
+We define the \textbf{Helmholtz equation} in the space-frequency domain to study this scenario.
+
+\subsection{PML conditions}
+
+Let's consider a one-dimensional space domain, divided in two: in the first part $ (-L,0) $ we have a simple wave equation, in the second part $ (0, \delta) $ we have a \textbf{damped wave equation}.
+The wave equations that describe both cases are:
+\begin{equation}
+    \partial_{tt} u - \partial_{xx} u = 0, \quad \partial_{tt} u + \nu \ \partial_x u - \partial_x \left( \partial_x u + \nu^* \ \partial_{xt} u \right) = 0
+\end{equation}
+
+The term $ \nu \ \partial_x u $ describes \textbf{fluid friction}, while the term $ \nu^* \ \partial_{xt} u $ describes \textbf{viscous friction}.
+The case we described is called \textbf{perfectly matched layer (PML)}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\linewidth]{pml.png}
+    \includegraphics[width=0.2\linewidth]{pml_reflection.png}
+    \caption{Acoustic problem with PML conditions (left), reflected wave $ R(\omega) $ and transmitted wave $ T(\omega) $ at the layer (right)}
+\end{figure}
+
+The general solution is:
+\begin{equation}
+    k^2 (\omega) = \frac{\omega^2 - j \omega \nu}{1 + j \omega \nu^*} \Rightarrow
+    \begin{cases}
+        \nu = \nu^* = 0, & \text{ for } x<0 \\[3pt]
+        \nu, \nu^* > 0, & \text{ for } x>0
+    \end{cases}
+    \Rightarrow u(x,t) = A \ e^{j \left( \omega t - kx \right)} + B \ e^{j \left( \omega t + kx \right)}
+\end{equation}
+
+The last expression describes the sum of a \textbf{progressive wave} ($A$) and \textbf{regressive wave} ($B$).
+
+\subsection{Absorbing layer}
+
+A scenario we're interested in is avoiding reflections and maximizing transmissions into the layer (\textbf{absorbing layer}):
+\begin{equation}
+    u(x,t) = 
+    \begin{cases}
+        1 \ e^{j \left( \omega t - kx \right)} + R(\omega) \ e^{j \left( \omega t + kx \right)}, & x<0 \\[3pt]
+        T(\omega) \ e^{j \left( \omega t - kx \right)}, & x>0
+    \end{cases}
+\end{equation}
+
+In the left domain, we have a progressive incident wave with weight 1 and a regressive reflected wave with weight $ R(\omega) $.
+In the right domain, we have a progressive transmitted wave with weight $ T(\omega) $.
+The condition of continuity at the layer boundary $ x=0 $ imposes:
+\begin{equation}
+    \begin{cases}
+        u(0^-, t) = u(0^+,t) \\[3pt]
+        \partial_x u(0^-, t) = \partial_x u(0^+,t) + \nu^* \partial_{xt} u(0^+,t)
+    \end{cases}
+\end{equation}
+
+As a result, we get reflection and transmission coefficients:
+\begin{equation}
+    R(\omega) = \frac{\omega - k \left( 1 + j \omega \nu^* \right)}{\omega + k \left( 1 + j \omega \nu^* \right)}, \quad \lim_{\nu^* \rightarrow + \infty} \abs{R(\omega)} = 1, \quad T(\omega) = 1 - R(\omega)
+\end{equation}
+
+The previous limit suggests that the more damping we have (high $ \nu^* $), the more reflection we may observe.
+This result is not desirable, so let's try a different approach: mass density $ \rho (x) $ and horizontal tension $ \mu (x) $ are not constants anymore (equal to 1 previously in the current section \ref{sec:les_06}), and have generally different values in the two space domains.
+\begin{equation}
+    \rho (x) \ \partial_{tt} u - \partial_x \left( \mu (x) \ \partial_x u \right) = 0, \quad c(x) = \sqrt{\frac{\mu (x)}{\rho (x)}}, \quad Z(x) = \sqrt{\rho (x) \mu (x)}
+\end{equation}
+
+We introduce the concept of \textbf{impedance} $ Z(x) $ that describes the specific space domain (or position) characteristics.
+Both space domains $ (-L,0) $ and $ (0,\delta) $ have specific constant values of wave speed $ c $ and impedance $ Z $:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{pml_impedances.png}
+    \caption{PML conditions with impedances ($Z$, $Z^*$) and wave speeds ($c$, $c^*$)}
+\end{figure}
+
+As we had before:
+\begin{equation}
+    u(x,t) = 
+    \begin{cases}
+        1 \ e^{j \left( \omega t - kx \right)} + R(\omega) \ e^{j \left( \omega t + kx \right)}, & x<0 \\[3pt]
+        T(\omega) \ e^{j \left( \omega t - kx \right)}, & x>0
+    \end{cases}
+\end{equation}
+
+The condition of continuity at the layer boundary $ x=0 $ imposes:
+\begin{equation}
+    \begin{cases}
+        u(0^-, t) = u(0^+,t) \\[3pt]
+        \mu^- \ \partial_x u(0^-, t) = \mu^+ \ \partial_x u(0^+,t)
+    \end{cases}
+\end{equation}
+
+Where $ \mu^- $ and $ \mu^+ $ are associated to left and right space domain, respectively.
+As a result, we get reflection and transmission coefficients:
+\begin{equation}
+    R(\omega) = \frac{Z - Z^*}{Z + Z^*}, \quad T(\omega) = \frac{2Z}{Z + Z^*}
+\end{equation}
+
+The goal is always the same: avoiding reflections and maximizing transmissions.
+\begin{equation}\label{eq:imp_matching}
+    R(\omega) = 0, \ T(\omega) = 1 \Leftrightarrow Z = Z^*
+\end{equation}
+
+The last expression is called \textbf{impedance matching}.
+
+\subsection{Helmholtz equation}
+
+The question now is: how can we implement an absorbing layer that works as we desire?
+
+Let's consider the following form for both solution $ u(x,t) $ and force $ f(x,t) $:
+\begin{equation}
+    u(x,t) = \hat{u}(x) e^{j \omega t}, \quad f(x,t) = \hat{f}(x) e^{j \omega t}
+\end{equation}
+
+Applied into the wave equation \eqref{eq:wave_1D}, it becomes:
+\begin{equation} \label{eq:helmholtz}
+    \rho (x) \ \partial_{tt} u - \partial_x \left( \mu (x) \ \partial_x u \right) = f \Rightarrow \rho (x) \left( j \omega \right)^2 \hat{u}(x) e^{j \omega t} - \partial_x \left( \mu (x) \ \partial_x \hat{u}(x) \ e^{j \omega t} \right) = \hat{f}(x) \ e^{j \omega t}
+\end{equation}
+\begin{equation*}
+    \Rightarrow - \rho (x) \omega^2 \hat{u}(x) \ \cancel{e^{j \omega t}} - \partial_x \left( \mu (x) \ \partial_x \hat{u}(x) \ \cancel{e^{j \omega t}} \right) = \hat{f}(x) \ \cancel{e^{j \omega t}}
+    \Rightarrow - \rho (x) \omega^2 \hat{u}(x) - \partial_x \left( \mu (x) \ \partial_x \hat{u}(x) \right) = \hat{f}(x)
+\end{equation*}
+
+The last expression is called \textbf{Helmholtz equation} and describes the problem in the space-frequency domain.
+The function $ u(x,t) $ is solution of the wave equation \eqref{eq:wave_1D} \textbf{if and only if} the function $ \hat{u} (x,\omega) $ is solution of \eqref{eq:helmholtz}.
+
+We can switch between time and frequency domain using the Fourier transform:
+\begin{equation}
+    u(x,t) = \frac{1}{\sqrt{2\pi}} \int_{\mathbb{R}} e^{j \omega t} \ \hat{u}(x,\omega) \ d\omega \approx \sum_{n=1}^{N^*} C_n \ e^{j \omega_n t} \ \hat{u}(x, \omega_n)
+\end{equation}
+\begin{equation*}
+    \hat{u}(x,\omega) = \frac{1}{\sqrt{2\pi}} \int_{\mathbb{R}} e^{-j \omega t} \ u(x,t) \ dt
+\end{equation*}
+
+We want to express the impedance matching condition \eqref{eq:imp_matching} in frequency domain:
+\begin{equation}
+    \begin{cases}
+        \rho (x,\omega) = \rho (x), \quad \mu (x,\omega) = \mu (x), & x<0 \\[3pt]
+        \rho (x,\omega) = \rho^* (x), \quad \mu (x,\omega) = \mu^* (x), & x \geq 0
+    \end{cases}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{pml_imp_match.png}
+    \caption{Impedance matching for absorbing layers in frequency domain}
+\end{figure}
+
+The impedance matching condition \eqref{eq:imp_matching} states that:
+\begin{equation}
+    Z(0^-, \omega) = Z(0^+, \omega) \Rightarrow \sqrt{\rho(0^-) \mu(0^-)} = \sqrt{\rho^*(0^+) \mu^*(0^+)} 
+\end{equation}
+
+Let's introduce the coefficient $ d(\omega) \in \mathbb{C} $ to describe impedance matching and amplitude reduction for $ x>0 $:
+\begin{equation}
+    \rho^*(x) = \frac{\rho(x)}{d(\omega)}, \quad \mu^*(x) = \mu(x) \ d(\omega) 
+\end{equation}
+
+Applied into the Helmholtz equation \eqref{eq:helmholtz}, it becomes:
+\begin{equation}
+    - \frac{\rho(x)}{d(\omega)} \omega^2 \hat{u}(x) - \partial_x \left( \mu(x) \ d(\omega) \ \partial_x \hat{u}(x) \right) = 0
+\end{equation}
+\begin{equation*}
+    d(\omega) = \frac{1}{a + jb} \Rightarrow u(x,t) = e^{j \omega \left( t \pm \frac{ax}{c} \right)} \ e^{\mp \omega \frac{bx}{c}}
+\end{equation*}
+
+The first term describes the propagating wave, the second term describes the damping effect.
+
+Let's consider $ a=1 $ and $ b = - \dfrac{\sigma}{\omega} $ ($ \sigma > 0 $, considering that $ \omega b < 0 $):
+\begin{equation}
+    u(x,t) = e^{j \omega \left( t \pm \frac{x}{c} \right)} \ e^{\pm \frac{\sigma x}{c}}, \quad d(\omega) = \frac{1}{1 - j \frac{\sigma}{\omega}} = \frac{j\omega}{\sigma + j\omega} \text{ constant}
+\end{equation}
+
+The first term of $ u(x,t) $ suggests that the phase of the wave is constant, while the second term suggests that the minimum length $ L $ of the layer necessary to entirely attenuate the waves is:
+\begin{equation}
+    e^{\pm \frac{\sigma x}{c}} |_{x=L} = e^{\pm \frac{\sigma}{c} L} \Rightarrow L = \frac{c}{\sigma}
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{pml_layer_length.png}
+    \caption{Minimum absorbing layer length}
+\end{figure}
+
+The resulting Helmholtz equation (in the \textbf{space-frequency} domain):
+\begin{equation}
+    \rho (x) \left( \sigma + j \omega \right) \hat{u} - \partial_x \left( \mu (x) \frac{1}{\sigma + j \omega} \partial_x \hat{u} \right) = 0, \quad x \geq 0
+\end{equation}
+
+Becomes, in the \textbf{space-time} domain:
+\begin{equation}
+    \rho \ \partial_{tt} u + 2 \sigma \ \partial_t u + \sigma^2 u - \partial_x \left( \mu \ \partial_x u \right) = 0, \quad x \geq 0
+\end{equation}
+
+Let's go back to \eqref{eq:helmholtz}, with $ \rho (x) $ and $ \mu (x) $ as constants and adding boundary conditions:
+\begin{equation}
+    \begin{cases}
+        \rho \omega^2 \ \hat{u}(x) + \mu \ \partial_{xx} \hat{u}(x) = \hat{f}(x) \\[3pt]
+        \hat{u} (0) = \hat{u} (L) = 0
+    \end{cases}
+    \Rightarrow
+    \begin{cases}
+        \cancel{\rho \omega^2} \ \hat{u}(x) + \frac{\mu}{\rho \omega^2} \partial_{xx} \hat{u}(x) = \frac{\hat{f}(x)}{\rho \omega^2} \\[3pt]
+        \hat{u} (0) = \hat{u} (L) = 0
+    \end{cases}
+\end{equation}
+\begin{equation*}
+    \Rightarrow
+    \begin{cases}
+        \hat{u}(x) + \frac{1}{k^2} \partial_{xx} \hat{u}(x) = \hat{g}(x) \\[3pt]
+        \hat{u} (0) = \hat{u} (L) = 0
+    \end{cases}
+\end{equation*}
+
+The solution of $ \hat{g}(x) = 0 $ as the following form:
+\begin{equation}
+    \hat{u}(x) = C_1 e^{j kx} + C_2 e^{-j kx}
+\end{equation}
+
+Applying the boundary conditions:
+\begin{equation}
+    \hat{u} (0) = 0 \Rightarrow C_1 + C_2 = 0 \Rightarrow C_2 = -C_1
+\end{equation}
+\begin{equation*}
+    \hat{u} (L) = 0 \Rightarrow C_1 \left( e^{jkL} - e^{-jkL} \right) = C_1 \ 2j \sin \left( kL \right) = 0 \
+\end{equation*}
+\begin{equation*}
+    \Rightarrow \sin \left( kL \right) = 0 \Rightarrow kL = n \pi \Rightarrow k_n = n \frac{\pi}{L}, \quad n = 1, 2, \cdots
+\end{equation*}
+
+The resulting solution is:
+\begin{equation}
+    \hat{u}(x) = \sum_{n=1}^{+\infty} \hat{u}_n \sin \left( k_n x \right) = \sum_{n=1}^{+\infty} \hat{u}_n \sin \left( n \frac{\pi}{L} x \right)
+\end{equation}
+
+Expanding the function $ \hat{g}(x) $ by Fourier series:
+\begin{equation}
+    \hat{g}(x) = \sum_{n=1}^{+\infty} \hat{g}_n \sin \left( n \frac{\pi}{L} x \right)
+\end{equation}
+
+The previous Helmholtz equation becomes:
+\begin{equation}
+    \hat{u}(x) + \frac{1}{k^2} \partial_{xx} \hat{u}(x) = \hat{g}(x) \Rightarrow \sum_{n=1}^{+\infty} \hat{u}_n \left[ 1 - \frac{1}{k_n^2} \left( n \frac{\pi}{L} \right)^2 \right] \sin \left( n \frac{\pi}{L} x \right) = \sum_{n=1}^{+\infty} \hat{g}_n \sin \left( n \frac{\pi}{L} x \right)
+\end{equation}
+\begin{equation*}
+    \Rightarrow \hat{u}_n = \frac{\hat{g}_n}{1 - \left( \frac{n \pi}{k_n L} \right)^2}
+\end{equation*}
+
+The last expression is the generic coefficient of the Fourier series of $ \hat{u}(x) $.
+
+Let's make some observations:
+\begin{itemize}
+    \item $ \frac{n \pi}{k_n L} \neq \pm 1, \ \forall n \Rightarrow \hat{u}_n \text{ well defined} $
+    \item $  \exists \ n^* \text{ so that } \left( \frac{n \pi}{k_n L} \right)^2 = 1 \Rightarrow \hat{u}_{n^*} \text{ not defined} \Rightarrow
+    \begin{cases}
+        \hat{g}_{n^*} = 0 \Rightarrow \infty \text{ solutions, } k_{n^*} = \frac{\omega_{n^*}}{c} \text{ leads to a resonance} \\[3pt]
+        \hat{g}_{n^*} \neq 0 \Rightarrow \text{no solutions}
+    \end{cases}
+    $
+\end{itemize}
+
+For $ c=1 $ we have $ \omega_n^2 = k_n^2 $, where $ k_n $ are the eigenvalues of the following:
+\begin{equation}
+    \partial_{xx} \hat{u}(x) + k_n^2 \ \hat{u}(x) = 0, \quad k_n^2 = \left( \frac{n \pi}{L} \right)^2
+\end{equation}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\linewidth]{resonances.png}
+    \caption{Resonances in the frequency domain}
+\end{figure}
+
+The solution is infinite at resonances, without any damping effect, so we need to consider a damping factor $ \gamma $:
+\begin{equation}
+    \rho \ \partial_{tt} u - \partial_x \left( \mu \ \partial_x u \right) + \gamma \ \partial_t u = 0, \quad \gamma > 0
+\end{equation}
+\begin{equation*}
+    \Rightarrow - \rho \omega^2 \ \hat{u}(x) - \partial_x \left( \mu \ \partial_x \hat{u} \right) -j \omega \gamma \ \hat{u}(x) = 0
+\end{equation*}
+
+Considering $ \rho $ and $ \mu $ constants:
+\begin{equation}
+    - \partial_{xx} \hat{u}(x) = \left( \frac{\rho \omega^2}{\mu} + j \frac{\omega \gamma}{\mu} \right) \hat{u}(x) = \left( k^2  + j \frac{\omega \gamma}{\mu} \right) \hat{u}(x)
+\end{equation}
+
+The eigenvalues of the damped problem are not purely real anymore (equal to $k_n$), but have an imaginary part that prevents divisions by zero (resonance).
+
+We may apply different boundary conditions to this problem:
+\begin{itemize}
+    \item sound soft: $ \hat{u}(x) = g_D(x) $
+    \item sound hard: $ \frac{j}{\rho \omega} \ \partial_x \hat{u} \ n(x) = g_N(x), \quad x=\left\{0,L\right\}, \quad n(x) =
+    \begin{cases}
+        -1, & x=0 \\[3pt]
+        1, & x=L
+    \end{cases}
+    $
+    \item impedance: $ \hat{u}(x) = Z(x) \left( \dfrac{j}{\rho \omega} \ \partial_x \hat{u} \ n(x) \right), \quad x=\left\{0,L\right\}, \quad Z(x) = 1 \text{ absorbing condition} $
+\end{itemize}
+
+In acoustic problems, we may identify $ \hat{u}(x) $ as the pressure $ p(x) $, and the quantity $ \dfrac{j}{\rho \omega} \ \partial_x \hat{u} $ as the particle velocity $ v(x) $.
+
+\clearpage
